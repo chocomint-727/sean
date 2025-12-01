@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "743138471387",
+    "project_id": "myskillyproject",
+    "storage_bucket": "myskillyproject.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743138471387:android:89f9b99e804c75f8610bfe",
+        "android_client_info": {
+          "package_name": "hu.bme.ait.sean"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiEl9uOAUyy4sEy4Idoj4hXdIKGcEh6-4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
