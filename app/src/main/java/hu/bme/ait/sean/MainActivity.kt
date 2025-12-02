@@ -1,6 +1,5 @@
 package hu.bme.ait.sean
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,14 +35,13 @@ import hu.bme.ait.sean.ui.theme.SeanTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             SeanTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    NavGraph(Modifier.padding(innerPadding))
                 }
             }
         }
