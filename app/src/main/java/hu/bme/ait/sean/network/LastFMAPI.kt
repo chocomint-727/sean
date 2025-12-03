@@ -6,12 +6,12 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 sealed interface LastFMAPI {
-    @GET("")
+    @GET("?method=album.getinfo&format=json")
     suspend fun getAlbumInfo(
-        @Query("artist") artist : String,
         @Query("album") album : String,
-        @Query("format") format : String = "json",
+        @Query("artist") artist : String,
+        //@Query("format") format : String = "json",
         @Query("api_key") apiKey : String = BuildConfig.MUSIC_API_KEY,
-        @Query("method") methodName : String = "album.getinfo",
+        //@Query("method") methodName : String = "album.getinfo",
     ) : AlbumResponse
 }

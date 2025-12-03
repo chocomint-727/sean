@@ -31,7 +31,7 @@ import hu.bme.ait.sean.nav.DetailScreenRoute
 import hu.bme.ait.sean.nav.HomeScreenRoute
 import hu.bme.ait.sean.nav.LoginScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
-import hu.bme.ait.sean.ui.login.LoginScreen
+import hu.bme.ait.sean.screen.album.DetailScreen
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
 @AndroidEntryPoint
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavGraph(modifier: Modifier) {
-    val backStack = rememberNavBackStack(LoginScreenRoute)
+    val backStack = rememberNavBackStack(DetailScreenRoute("Clarity", "Zedd"))
 
     NavDisplay(
         modifier = modifier,
@@ -65,17 +65,15 @@ fun NavGraph(modifier: Modifier) {
         ),
         entryProvider  = entryProvider {
             entry<LoginScreenRoute>{
-                LoginScreen(
-                    onLoginSuccess = {
-                        backStack.add(HomeScreenRoute)
-                    }
-                )
+//                LoginScreen(
+//                    onLoginSuccess =
+//                )
             }
             entry<HomeScreenRoute> {
                 //HomeScreen()
             }
             entry<DetailScreenRoute> { (albumName, artistName) ->
-                //DetailScreen()
+                DetailScreen(albumName, artistName, modifier = modifier)
             }
             entry<ReviewScreenRoute> { (albumName, artistName) ->
                 //ReviewScreen()
