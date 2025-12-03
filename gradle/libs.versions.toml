@@ -8,6 +8,7 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
 composeBom = "2024.09.00"
+
 # Navigation
 nav3Core = "1.0.0-alpha10"
 lifecycleViewmodelNav3 = "2.10.0-alpha10"
@@ -37,6 +38,7 @@ placeholder = "1.0.2"
 googleGmsGoogleServices = "4.4.4"
 firebaseAuth = "24.0.1"
 firebaseFirestore = "26.0.2"
+material3 = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -84,6 +86,7 @@ accompanist-permissions = { module = "com.google.accompanist:accompanist-permiss
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "genai" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

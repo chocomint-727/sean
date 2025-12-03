@@ -31,6 +31,7 @@ import hu.bme.ait.sean.nav.DetailScreenRoute
 import hu.bme.ait.sean.nav.HomeScreenRoute
 import hu.bme.ait.sean.nav.LoginScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
+import hu.bme.ait.sean.ui.login.LoginScreen
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
 @AndroidEntryPoint
@@ -64,9 +65,11 @@ fun NavGraph(modifier: Modifier) {
         ),
         entryProvider  = entryProvider {
             entry<LoginScreenRoute>{
-//                LoginScreen(
-//                    onLoginSuccess =
-//                )
+                LoginScreen(
+                    onLoginSuccess = {
+                        backStack.add(HomeScreenRoute)
+                    }
+                )
             }
             entry<HomeScreenRoute> {
                 //HomeScreen()
