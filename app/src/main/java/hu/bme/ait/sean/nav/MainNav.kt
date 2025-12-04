@@ -12,6 +12,8 @@ data class ReviewScreenRoute(
 ) : NavKey
 
 @Serializable
+data object SearchScreenRoute : NavKey
+@Serializable
 data object HomeScreenRoute : NavKey
 
 @Serializable
