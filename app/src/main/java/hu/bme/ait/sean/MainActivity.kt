@@ -7,19 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -31,7 +20,8 @@ import hu.bme.ait.sean.nav.DetailScreenRoute
 import hu.bme.ait.sean.nav.HomeScreenRoute
 import hu.bme.ait.sean.nav.LoginScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
-import hu.bme.ait.sean.screen.album.DetailScreen
+import hu.bme.ait.sean.ui.screen.album.DetailScreen
+import hu.bme.ait.sean.ui.screen.login.LoginScreen
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
 @AndroidEntryPoint
@@ -52,7 +42,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavGraph(modifier: Modifier) {
-    val backStack = rememberNavBackStack(DetailScreenRoute("Clarity", "Zedd"))
+    val backStack = rememberNavBackStack(LoginScreenRoute)
 
     NavDisplay(
         modifier = modifier,
@@ -65,12 +55,12 @@ fun NavGraph(modifier: Modifier) {
         ),
         entryProvider  = entryProvider {
             entry<LoginScreenRoute>{
-//                LoginScreen(
-//                    onLoginSuccess =
-//                )
+                LoginScreen(
+                    onLoginSuccess = {  }
+                )
             }
             entry<HomeScreenRoute> {
-                //HomeScreen()
+//                /**/HomeScreen()
             }
             entry<DetailScreenRoute> { (albumName, artistName) ->
                 DetailScreen(albumName, artistName, modifier = modifier)

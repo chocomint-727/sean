@@ -1,4 +1,4 @@
-package hu.bme.ait.sean.ui.login
+package hu.bme.ait.sean.ui.screen.login
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,7 +9,6 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.ignoreIoExceptions
 
 sealed interface LoginUiState {
 

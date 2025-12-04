@@ -1,13 +1,11 @@
-package hu.bme.ait.sean.screen.album
+package hu.bme.ait.sean.ui.screen.album
 
 import android.util.Log
-import androidx.compose.animation.core.snap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -73,7 +71,7 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
         Log.d("ALBUM ID", success.res.album?.mbid?: "")
 
-        val snapshotListener = Firebase.firestore.collection(DetailViewModel.REVIEW_COLLECTION)
+        val snapshotListener = Firebase.firestore.collection(REVIEW_COLLECTION)
             .orderBy("postDate")
             .whereEqualTo(
                 "albumID",
