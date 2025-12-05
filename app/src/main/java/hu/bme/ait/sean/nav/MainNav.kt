@@ -7,8 +7,9 @@ import kotlinx.serialization.Serializable
 data object LoginScreenRoute : NavKey
 @Serializable
 data class ReviewScreenRoute(
-    val albumName : String,
-    val artistName : String
+    val albumID : String,
+    val album : String,
+    val artist : String,
 ) : NavKey
 
 @Serializable

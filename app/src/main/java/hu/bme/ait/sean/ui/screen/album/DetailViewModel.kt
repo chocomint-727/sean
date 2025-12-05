@@ -1,6 +1,10 @@
 package hu.bme.ait.sean.ui.screen.album
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,6 +23,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.core.net.toUri
+import com.google.ai.client.generativeai.type.content
 
 
 sealed interface AlbumDetailsUIState {
@@ -69,13 +75,13 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             return@callbackFlow
         }
 
-        Log.d("ALBUM ID", success.res.album?.mbid?: "")
+        Log.d("ALBUM ID", success.res.album?.mbid!!.ifEmpty() { "${success.res.album?.name} - ${success.res.album?.artist}}" })
 
         val snapshotListener = Firebase.firestore.collection(REVIEW_COLLECTION)
             .orderBy("postDate")
             .whereEqualTo(
                 "albumID",
-                success.res.album?.mbid
+                success.res.album?.mbid!!.ifEmpty() { "${success.res.album?.name} - ${success.res.album?.artist}" }
             )
             .addSnapshotListener { snapshot, e ->
                 val res = if (snapshot != null) {
@@ -103,6 +109,20 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             snapshotListener.remove()
         }
 
+    }
+
+    fun openInMusic(ctx : Context, song : String, album : String, artist : String){
+        val query = Uri.encode("$song $album $artist")
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = "content://media/external/audio/media/".toUri() // general media content URI
+            putExtra("query", query)
+            setPackage("com.google.android.music")
+        }
+        if (intent.resolveActivity(ctx.packageManager) != null){
+            ctx.startActivity(intent)
+        } else {
+            Toast.makeText(ctx, "No music app could be found.", Toast.LENGTH_SHORT).show()
+        }
     }
 
 //    fun findUserPost(): Post? {

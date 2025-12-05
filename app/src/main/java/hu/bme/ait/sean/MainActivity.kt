@@ -23,6 +23,7 @@ import hu.bme.ait.sean.nav.ReviewScreenRoute
 import hu.bme.ait.sean.nav.SearchScreenRoute
 import hu.bme.ait.sean.ui.screen.album.DetailScreen
 import hu.bme.ait.sean.ui.screen.login.LoginScreen
+import hu.bme.ait.sean.ui.screen.review.ReviewScreen
 import hu.bme.ait.sean.ui.screen.search.SearchScreen
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavGraph(modifier: Modifier) {
-    val backStack = rememberNavBackStack(SearchScreenRoute) //LoginScreenRoute)
+    val backStack = rememberNavBackStack(LoginScreenRoute) //LoginScreenRoute)
 
     NavDisplay(
         modifier = modifier,
@@ -57,7 +58,9 @@ fun NavGraph(modifier: Modifier) {
         entryProvider  = entryProvider {
             entry<LoginScreenRoute>{
                 LoginScreen(
-                    onLoginSuccess = {  }
+                    onLoginSuccess = {
+                        backStack.add(SearchScreenRoute) // for testing for now
+                    }
                 )
             }
             entry<HomeScreenRoute> {
@@ -69,10 +72,14 @@ fun NavGraph(modifier: Modifier) {
                 }
             }
             entry<DetailScreenRoute> { (albumName, artistName) ->
-                DetailScreen(albumName, artistName, modifier = modifier)
+                DetailScreen(albumName, artistName, modifier = modifier) { albumID, album, artist ->
+                    backStack.add(ReviewScreenRoute(albumID, album, artist))
+                }
             }
-            entry<ReviewScreenRoute> { (albumName, artistName) ->
-                //ReviewScreen()
+            entry<ReviewScreenRoute> { (albumID, album, artist) ->
+                ReviewScreen(albumID, album, artist) {
+                    backStack.removeLastOrNull()
+                }
             }
         }
     )
