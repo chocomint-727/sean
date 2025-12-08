@@ -93,9 +93,9 @@ fun LoginScreen(
             label = {
                 Text("Password")
             },
-            value = email,
+            value = password,
             onValueChange = {
-                email = it
+                password = it
             },
             singleLine = true,
             visualTransformation = if (showPassword) VisualTransformation.None

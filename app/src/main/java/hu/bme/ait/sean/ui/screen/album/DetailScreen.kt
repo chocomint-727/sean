@@ -1,9 +1,20 @@
 package hu.bme.ait.sean.ui.screen.album
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideIn
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
@@ -15,6 +26,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,7 +80,7 @@ fun ignoreCaseOpt(ignoreCase: Boolean) =
 
 fun String?.indexesOf(pat: String, ignoreCase: Boolean = true): List<Int> =
     pat.toRegex(ignoreCaseOpt(ignoreCase))
-        .findAll(this?: "")
+        .findAll(this ?: "")
         .map { it.range.first }
         .toList()
 
@@ -77,7 +90,7 @@ fun DetailScreen(
     artist: String,
     modifier: Modifier,
     viewModel: DetailViewModel = hiltViewModel(),
-    goToReviewScreen : (String, String, String) -> Unit,
+    goToReviewScreen: (String, String, String) -> Unit,
 ) {
 
     val ctx = LocalContext.current
@@ -88,6 +101,17 @@ fun DetailScreen(
 
     var showInfo by remember { mutableStateOf(false) }
 
+    var albumCoverTargetSize by remember { mutableFloatStateOf(0.6f) }
+    val albumCoverSize: Float by animateFloatAsState(
+        albumCoverTargetSize,
+        keyframes {
+            durationMillis = 300
+            albumCoverTargetSize * 0.5f at 150 with EaseOut
+            albumCoverTargetSize at 500 with EaseIn
+        },
+        label = "size"
+    )
+
     LaunchedEffect(Unit) {
         viewModel.getDetails(album, artist)
     }
@@ -96,12 +120,12 @@ fun DetailScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.padding(10.dp)
     ) {
-        Column (
+        Column(
             modifier = Modifier
                 .animateContentSize(
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy, // controls "elasticity"
-                        stiffness = Spring.StiffnessHigh // lower = slower, more bounce
+                        dampingRatio = Spring.DampingRatioNoBouncy, // controls "elasticity"
+                        stiffness = Spring.StiffnessLow // lower = slower, more bounce
                     )
                 )
                 .fillMaxWidth(),
@@ -118,163 +142,200 @@ fun DetailScreen(
                 }
 
                 is AlbumDetailsUIState.Success -> {
-                    val details = (viewModel.albumDetailsUIState as AlbumDetailsUIState.Success).res.album!!
+                    val details =
+                        (viewModel.albumDetailsUIState as AlbumDetailsUIState.Success).res.album!!
                     AsyncImage(
                         model = details.image?.last()?.text
                             ?: "",
                         modifier = Modifier
-                            .fillMaxWidth(0.6f)
+                            .fillMaxWidth(albumCoverSize)
                             .aspectRatio(1f),
                         contentDescription = "Album Cover"
                     )
 
-                    Text(details.name ?: "SLITHERMAN VS NEPHEW", fontSize = 32.sp, fontWeight = FontWeight.W400)
-                    Row {
+                    Spacer(Modifier.height(10.dp))
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable {
+                            showInfo = !showInfo
+                            albumCoverTargetSize = if (showInfo) 0.2f else 0.6f
+                        }
+                    ) {
                         Text(
-                            details.artist ?: "RXKNephew",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.W200
+                            details.name ?: "SLITHERMAN VS NEPHEW",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.W400
                         )
-                        Icon(
-                            if (showInfo) Icons.Filled.ArrowDropDown else Icons.Filled.ArrowDropUp,
-                            contentDescription = "",
-                            modifier = Modifier.clickable{
-                                showInfo = !showInfo
-                            }
-                        )
+                        Row {
+                            Text(
+                                details.artist ?: "RXKNephew",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.W200
+                            )
+                            Icon(
+                                if (showInfo) Icons.Filled.ArrowDropDown else Icons.Filled.ArrowDropUp,
+                                contentDescription = "",
+                            )
+                        }
                     }
 
-                    if (showInfo){
-                        Text(
-                            details.wiki?.summary?.take(details.wiki?.summary.indexesOf("<a", true).firstOrNull() ?: details.wiki?.summary?.length ?: 0) ?: "SLITHERMAN VS NEPHEW",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.W200,
-                            textAlign = TextAlign.Center
+                    Spacer(Modifier.height(10.dp))
+
+
+                    AnimatedVisibility(
+                        visible = showInfo,
+                        enter = expandVertically(
+                            expandFrom = Alignment.Top,
+                            animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                        ),
+                        exit = shrinkVertically(
+                            animationSpec = tween(durationMillis = 300, easing = EaseInOut)
                         )
+                    ) {
+                        Column (
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
 
-                        Row(Modifier.fillMaxWidth(0.8f)) {
-                            Text(
-                                "Plays: ",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W600,
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .weight(3f)
-                            )
-                            Text(
-                                details.playcount ?: "SLITHERMAN VS NEPHEW",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W200,
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .weight(7f)
-                            )
-                        }
-                        Row(Modifier.fillMaxWidth(0.8f)) {
-                            Text(
-                                "Listeners: ",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W600,
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .weight(3f)
-                            )
-                            Text(
-                                details.listeners ?: "SLITHERMAN VS NEPHEW",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W200,
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .weight(7f)
-                            )
-                        }
-                        Row(Modifier.fillMaxWidth(0.8f)) {
-                            Text(
-                                "MBID: ",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W600,
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .weight(3f)
-                            )
-                            Text(
-                                details.mbid ?: "SLITHERMAN VS NEPHEW",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W200,
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .weight(7f)
-                            )
-                        }
 
-                        if (details.tracks != null) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black)
-                                    .padding(2.dp)
-                                    .heightIn(max = 100.dp)
-                                    .fillMaxWidth(0.8f)
-                            ) {
-                                itemsIndexed(items = details.tracks!!.track!!) { ix, track ->
-                                    Row (
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ){
-                                        Text(
-                                            "$ix. ${track?.name ?: "SLITHERMAN VS NEPHEW"}",
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.W200,
-                                            modifier = Modifier.padding(10.dp)
-                                        )
-                                        Spacer(Modifier.weight(1f))
-                                        IconButton(
-                                            {
-                                                // call intent to send to music app
-                                                viewModel.openInMusic(
-                                                    ctx,
-                                                    track?.name ?: "Block List",
-                                                    details.name ?: "Block List - Single",
-                                                    details.artist ?: "RXKNephew"
+                            Text(
+                                details.wiki?.summary?.take(
+                                    details.wiki?.summary.indexesOf(
+                                        "<a",
+                                        true
+                                    ).firstOrNull() ?: details.wiki?.summary?.length ?: 0
+                                ) ?: "SLITHERMAN VS NEPHEW",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.W200,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth(0.8f)
+                            )
+
+//                        Row(Modifier.fillMaxWidth(0.8f)) {
+//                            Text(
+//                                "Plays: ",
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.W600,
+//                                modifier = Modifier
+//                                    .border(1.dp, Color.Black)
+//                                    .padding(2.dp)
+//                                    .weight(3f)
+//                            )
+//                            Text(
+//                                details.playcount ?: "SLITHERMAN VS NEPHEW",
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.W200,
+//                                modifier = Modifier
+//                                    .border(1.dp, Color.Black)
+//                                    .padding(2.dp)
+//                                    .weight(7f)
+//                            )
+//                        }
+//                        Row(Modifier.fillMaxWidth(0.8f)) {
+//                            Text(
+//                                "Listeners: ",
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.W600,
+//                                modifier = Modifier
+//                                    .border(1.dp, Color.Black)
+//                                    .padding(2.dp)
+//                                    .weight(3f)
+//                            )
+//                            Text(
+//                                details.listeners ?: "SLITHERMAN VS NEPHEW",
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.W200,
+//                                modifier = Modifier
+//                                    .border(1.dp, Color.Black)
+//                                    .padding(2.dp)
+//                                    .weight(7f)
+//                            )
+//                        }
+//                        Row(Modifier.fillMaxWidth(0.8f)) {
+//                            Text(
+//                                "MBID: ",
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.W600,
+//                                modifier = Modifier
+//                                    .border(1.dp, Color.Black)
+//                                    .padding(2.dp)
+//                                    .weight(3f)
+//                            )
+//                            Text(
+//                                details.mbid ?: "SLITHERMAN VS NEPHEW",
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.W200,
+//                                modifier = Modifier
+//                                    .border(1.dp, Color.Black)
+//                                    .padding(2.dp)
+//                                    .weight(7f)
+//                            )
+//                        }
+
+                            Spacer(Modifier.height(10.dp))
+
+                            if (details.tracks != null) {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .border(1.dp, Color.Black)
+                                        .padding(2.dp)
+                                        .heightIn(max = 150.dp)
+                                        .fillMaxWidth(0.8f)
+                                ) {
+                                    itemsIndexed(items = details.tracks!!.track!!) { ix, track ->
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                "$ix. ${track?.name ?: "SLITHERMAN VS NEPHEW"}",
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.W200,
+                                                modifier = Modifier.padding(10.dp)
+                                            )
+                                            Spacer(Modifier.weight(1f))
+                                            IconButton(
+                                                {
+                                                    // call intent to send to music app
+                                                    viewModel.openInMusic(
+                                                        ctx,
+                                                        track?.name ?: "Block List",
+                                                        details.name ?: "Block List - Single",
+                                                        details.artist ?: "RXKNephew"
+                                                    )
+                                                }
+                                            ) {
+                                                Icon(
+                                                    Icons.Filled.Start,
+                                                    contentDescription = "To Music App",
+                                                    Modifier.size(16.dp, 16.dp)
                                                 )
                                             }
-                                        ) {
-                                            Icon(Icons.Filled.Start, contentDescription = "To Music App", Modifier.size(16.dp, 16.dp))
                                         }
-                                    }
 
-                                    HorizontalDivider()
+                                        HorizontalDivider()
+                                    }
                                 }
                             }
                         }
                     }
 
-                    Row() {
 
-                        Button(
-                            { },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Primary
-                            )
-                        ) {
-                            Text("Open in music app")
-                        }
-                        Button(
-                            {
-                                goToReviewScreen(details.mbid!!, details.name!!, details.artist!!)
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Primary
-                            )
-                        ) {
-                            Text("Write / Edit Review")
-                        }
+                    Spacer(Modifier.height(10.dp))
+
+                    Button(
+                        {
+                            goToReviewScreen(details.mbid!!, details.name!!, details.artist!!)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Primary
+                        )
+                    ) {
+                        Text("Write / Edit Review")
                     }
+
+                    Spacer(Modifier.height(10.dp))
+
                 }
             }
 

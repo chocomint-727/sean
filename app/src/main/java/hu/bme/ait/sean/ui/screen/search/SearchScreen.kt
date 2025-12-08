@@ -24,13 +24,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,12 +58,20 @@ fun SearchScreen(
             onValueChange = {searchText = it},
             label = {Text("Search...")},
             trailingIcon = {
-                Text("blud", modifier = Modifier.clickable(){
+                IconButton(
+                    {
                         viewModel.search(searchText)
                     }
-                )
+                ) {
+                    Icon(Icons.Filled.Search, "Search")
+                }
             },
             modifier = Modifier.fillMaxWidth()
+                .onFocusChanged(){focus ->
+                    if (!focus.hasFocus && searchText.isNotEmpty()){
+                        viewModel.search(searchText)
+                    }
+                },
         )
 
         HorizontalDivider(modifier = Modifier.padding(8.dp))
