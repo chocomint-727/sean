@@ -21,10 +21,12 @@ import hu.bme.ait.sean.nav.HomeScreenRoute
 import hu.bme.ait.sean.nav.LoginScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
 import hu.bme.ait.sean.nav.SearchScreenRoute
+import hu.bme.ait.sean.nav.UserScreenRoute
 import hu.bme.ait.sean.ui.screen.album.DetailScreen
 import hu.bme.ait.sean.ui.screen.login.LoginScreen
 import hu.bme.ait.sean.ui.screen.review.ReviewScreen
 import hu.bme.ait.sean.ui.screen.search.SearchScreen
+import hu.bme.ait.sean.ui.screen.user.UserScreen
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
 @AndroidEntryPoint
@@ -59,9 +61,14 @@ fun NavGraph(modifier: Modifier) {
             entry<LoginScreenRoute>{
                 LoginScreen(
                     onLoginSuccess = {
-                        backStack.add(SearchScreenRoute) // for testing for now
+                        backStack.add(UserScreenRoute) // for testing for now
                     }
                 )
+            }
+            entry<UserScreenRoute>{
+                UserScreen { album, artist ->
+                    backStack.add(DetailScreenRoute(album, artist))
+                }
             }
             entry<HomeScreenRoute> {
 //                /**/HomeScreen()
@@ -72,12 +79,12 @@ fun NavGraph(modifier: Modifier) {
                 }
             }
             entry<DetailScreenRoute> { (albumName, artistName) ->
-                DetailScreen(albumName, artistName, modifier = modifier) { albumID, album, artist ->
-                    backStack.add(ReviewScreenRoute(albumID, album, artist))
+                DetailScreen(albumName, artistName, modifier = modifier) { albumID, album, artist, img_url ->
+                    backStack.add(ReviewScreenRoute(albumID, album, artist, img_url))
                 }
             }
-            entry<ReviewScreenRoute> { (albumID, album, artist) ->
-                ReviewScreen(albumID, album, artist) {
+            entry<ReviewScreenRoute> { (albumID, album, artist, img_url) ->
+                ReviewScreen(albumID, album, artist, img_url) {
                     backStack.removeLastOrNull()
                 }
             }

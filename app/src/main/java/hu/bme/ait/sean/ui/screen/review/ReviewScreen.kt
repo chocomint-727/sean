@@ -31,6 +31,7 @@ fun ReviewScreen(
     albumID : String,
     album : String,
     artist : String,
+    img_url : String,
     viewModel: ReviewViewModel = hiltViewModel(),
     returnToPrevScreen : () -> Unit
 ) {
@@ -69,6 +70,7 @@ fun ReviewScreen(
                         albumID,
                         album,
                         artist,
+                        img_url,
                         content = review,
                         rating = stars
                     )

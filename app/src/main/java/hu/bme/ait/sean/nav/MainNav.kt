@@ -5,11 +5,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data object LoginScreenRoute : NavKey
+
+@Serializable
+data object UserScreenRoute : NavKey
+
 @Serializable
 data class ReviewScreenRoute(
     val albumID : String,
     val album : String,
     val artist : String,
+    val img_url : String
 ) : NavKey
 
 @Serializable

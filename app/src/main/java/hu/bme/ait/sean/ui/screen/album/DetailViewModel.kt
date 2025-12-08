@@ -83,8 +83,6 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             return@callbackFlow
         }
 
-        Log.d("ALBUM ID", success.res.album?.mbid!!.ifEmpty() { "${success.res.album?.name} - ${success.res.album?.artist}}" })
-
         val snapshotListener = Firebase.firestore.collection(REVIEW_COLLECTION)
             .orderBy("postDate")
             .whereEqualTo(

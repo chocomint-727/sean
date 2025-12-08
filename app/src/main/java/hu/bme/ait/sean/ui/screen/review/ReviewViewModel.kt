@@ -14,6 +14,7 @@ import com.google.firebase.firestore.firestore
 import com.google.type.DateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.ait.sean.data.Post
+import hu.bme.ait.sean.data.StoredAlbumData
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.DetailViewModel
 import kotlinx.coroutines.delay
@@ -50,25 +51,62 @@ class ReviewViewModel : ViewModel() {
         albumID : String,
         album : String,
         artist : String,
+        img_url : String,
         content : String,
         rating : Float
     ) {
         writeReviewUIState = WriteReviewUIState.Loading
+        val id = albumID.ifEmpty { "$album - $artist" }
         viewModelScope.launch {
             val postToUpload = Post(
                 uid = auth.uid!!,
                 author = user.name,
                 postDate = Timestamp.now(),
-                albumID = albumID.ifEmpty { "$album - $artist" },
+                albumID = id,
                 rating = rating,
                 postBody = content
             )
 
-            Firebase.firestore.collection(DetailViewModel.REVIEW_COLLECTION)
-                .add(postToUpload)
-                .addOnSuccessListener {
-                    writeReviewUIState = WriteReviewUIState.Success
-                    Log.d("POST_REVIEW", "posted review to ${albumID.ifEmpty { "$album - $artist" }}")
+            val albumToUpload  = StoredAlbumData(
+                name = album,
+                artist = artist,
+                img_url = img_url
+            )
+
+            val db = Firebase.firestore
+
+            val docRef = db.collection("albums").document(id)
+            docRef.get()
+                .addOnSuccessListener { document ->
+                    if (document.data == null) {
+                        Log.d("CREATE_REVIEW", "Didn't find document, creating...")
+                        db.collection("albums")
+                            .document(id)
+                            .set(albumToUpload)
+                            .addOnSuccessListener {
+                                db.collection(DetailViewModel.REVIEW_COLLECTION)
+                                    .add(postToUpload)
+                                    .addOnSuccessListener {
+                                        writeReviewUIState = WriteReviewUIState.Success
+                                        Log.d("POST_REVIEW", "posted review to ${albumID.ifEmpty { "$album - $artist" }}")
+                                    }
+                                    .addOnFailureListener {
+                                        writeReviewUIState = WriteReviewUIState.Error(it.message!!)
+                                    }
+                            }
+                    } else {
+                        Log.d("CREATE_REVIEW", "Found document! ignoring...")
+                        Log.d("CREATE_REVIEW", "DocumentSnapshot data: ${document.data}")
+                        db.collection(DetailViewModel.REVIEW_COLLECTION)
+                            .add(postToUpload)
+                            .addOnSuccessListener {
+                                writeReviewUIState = WriteReviewUIState.Success
+                                Log.d("POST_REVIEW", "posted review to ${albumID.ifEmpty { "$album - $artist" }}")
+                            }
+                            .addOnFailureListener {
+                                writeReviewUIState = WriteReviewUIState.Error(it.message!!)
+                            }
+                    }
                 }
                 .addOnFailureListener {
                     writeReviewUIState = WriteReviewUIState.Error(it.message!!)

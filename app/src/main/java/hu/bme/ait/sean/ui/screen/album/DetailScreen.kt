@@ -105,7 +105,6 @@ fun Modifier.realOffset(y: Dp) = layout { measurable, constraints ->
 
     val yPx = y.roundToPx()
     val newConst = constraints.copy(maxHeight = constraints.maxHeight - yPx, minHeight = constraints.minHeight - yPx)
-    Log.d("CONSTRAINTS_DIMS", "maxHeight: ${newConst.maxHeight}, minHeight: ${newConst.minHeight}")
     val placeable = measurable.measure(newConst)
 
     // expand layout to allow upward movement
@@ -121,7 +120,7 @@ fun DetailScreen(
     artist: String,
     modifier: Modifier,
     viewModel: DetailViewModel = hiltViewModel(),
-    goToReviewScreen: (String, String, String) -> Unit,
+    goToReviewScreen: (String, String, String, String) -> Unit,
 ) {
 
     val ctx = LocalContext.current
@@ -207,7 +206,7 @@ fun DetailScreen(
                         Spacer(Modifier.height(10.dp))
 
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+                            horizontalAlignment = Alignment.Start,
                             modifier = Modifier
                                 .clickable {
                                     showInfo = !showInfo
@@ -236,7 +235,7 @@ fun DetailScreen(
 
                         Button(
                             {
-                                goToReviewScreen(details.mbid!!, details.name!!, details.artist!!)
+                                goToReviewScreen(details.mbid!!, details.name!!, details.artist!!, details.image?.last()?.text ?: "")
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Primary
@@ -387,20 +386,19 @@ fun ReviewCard(
             )
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
                 modifier = Modifier
-                    .weight(0.3f)
                     .padding(10.dp)
             ) {
-                // AsyncImage() profile pic
-                Text(post.author, fontSize = 24.sp)
+                // AsyncImage()// profile pic
+                Text(post.author, fontSize = 12.sp)
             }
 
             Column(
                 modifier = Modifier
-                    .weight(0.7f)
                     .padding(10.dp)
             ) {
                 Row(
@@ -418,7 +416,6 @@ fun ReviewCard(
                         fontSize = 24.sp
                     )
                 }
-
 
                 if (expanded) {
                     Text(post.postBody, fontSize = 16.sp, fontWeight = FontWeight.W300)
