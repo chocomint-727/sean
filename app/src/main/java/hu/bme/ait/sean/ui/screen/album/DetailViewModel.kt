@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.google.ai.client.generativeai.type.content
+import hu.bme.ait.sean.data.User
 
 
 sealed interface AlbumDetailsUIState {
@@ -44,11 +45,18 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
     var albumDetailsUIState: AlbumDetailsUIState by mutableStateOf(AlbumDetailsUIState.Loading)
 
-
+    private lateinit var user : User
     private lateinit var auth: FirebaseAuth
 
     init {
         auth = Firebase.auth
+        Firebase.firestore.collection("users").document(auth.currentUser!!.email!!).get()
+            .addOnSuccessListener {
+                user = it.toObject(User::class.java)!!
+            }
+            .addOnFailureListener {
+                user = User()
+            }
     }
 
     companion object {

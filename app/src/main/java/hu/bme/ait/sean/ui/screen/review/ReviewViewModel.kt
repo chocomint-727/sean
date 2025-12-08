@@ -14,6 +14,7 @@ import com.google.firebase.firestore.firestore
 import com.google.type.DateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.ait.sean.data.Post
+import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.DetailViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -31,9 +32,18 @@ class ReviewViewModel : ViewModel() {
 
     var writeReviewUIState : WriteReviewUIState by mutableStateOf(WriteReviewUIState.Idle)
 
-    private lateinit var auth : FirebaseAuth
+    private lateinit var user : User
+    private lateinit var auth: FirebaseAuth
+
     init {
         auth = Firebase.auth
+        Firebase.firestore.collection("users").document(auth.currentUser!!.email!!).get()
+            .addOnSuccessListener {
+                user = it.toObject(User::class.java)!!
+            }
+            .addOnFailureListener {
+                user = User()
+            }
     }
 
     fun pushReview(
@@ -47,7 +57,7 @@ class ReviewViewModel : ViewModel() {
         viewModelScope.launch {
             val postToUpload = Post(
                 uid = auth.uid!!,
-                author = auth.currentUser!!.email!!,
+                author = user.name,
                 postDate = Timestamp.now(),
                 albumID = albumID.ifEmpty { "$album - $artist" },
                 rating = rating,

@@ -41,7 +41,7 @@ fun ReviewScreen(
         modifier = Modifier.padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text("Review for ", fontSize = 32.sp, modifier = Modifier.align(Alignment.Start))
+        Text("Review for $album - $artist", fontSize = 32.sp, modifier = Modifier.align(Alignment.Start))
         Row (
             horizontalArrangement = Arrangement.SpaceBetween
         ){
