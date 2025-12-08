@@ -10,13 +10,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -44,9 +54,11 @@ fun UserScreen(
     Column (
         modifier = Modifier.padding(10.dp)
     ){
-        when (viewModel.userUIState) {
+        when (val state = viewModel.userUIState) {
             is UserUIState.Init -> {
-                UserCard(User())
+                UserCard(
+                    user = User(),
+                    onNameChange = {})
             }
             is UserUIState.Loading -> {
                 CircularProgressIndicator()
@@ -55,7 +67,12 @@ fun UserScreen(
                 Text("Error Loading User Details")
             }
             is UserUIState.Success -> {
-                UserCard((viewModel.userUIState as UserUIState.Success).user)
+                UserCard(
+                    user = state.user,
+                    onNameChange = { newName ->
+                        viewModel.updateUsername(newName)
+                    }
+                )
             }
         }
 
@@ -78,13 +95,16 @@ fun UserScreen(
             }
         }
     }
-
 }
 
 @Composable
 fun UserCard(
-    user : User
+    user : User,
+    onNameChange: (String) -> Unit
 ) {
+    var isEditing by remember { mutableStateOf(false) }
+    var nameText by remember(user.name) {mutableStateOf(user.name)}
+
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
         modifier = Modifier.fillMaxWidth()
@@ -96,7 +116,50 @@ fun UserCard(
             Column (
                 horizontalAlignment = Alignment.Start,
             ){
-                Text(user.name, fontSize = 24.sp)
+                if(isEditing){
+                    OutlinedTextField(
+                        value = nameText,
+                        onValueChange = {nameText = it},
+                        singleLine = true,
+                        label = {Text("Username")},
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                if (nameText.isNotBlank()) {
+                                    onNameChange(nameText)
+                                    isEditing = false
+                                }
+                            }
+                        ) {
+                            Text("Save")
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            nameText = user.name
+                            isEditing = false
+                        }
+                    ) {
+                        Text("Cancel")
+                    }
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(user.name, fontSize = 24.sp)
+                        IconButton(onClick = {isEditing = true}) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
                 Text(user.email, fontSize = 16.sp)
                 Text(user.uid, fontSize = 12.sp, fontWeight = FontWeight.W200)
             }

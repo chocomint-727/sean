@@ -33,6 +33,8 @@ class UserViewModel : ViewModel() {
     var userUIState : UserUIState by mutableStateOf(UserUIState.Init)
     private lateinit var auth : FirebaseAuth
 
+    private val usersCollection = Firebase.firestore.collection("users")
+
     init {
         userUIState = UserUIState.Loading
         auth = Firebase.auth
@@ -107,6 +109,25 @@ class UserViewModel : ViewModel() {
         awaitClose {
             return@awaitClose
         }
+    }
+
+    fun updateUsername(newName: String){
+        val currentUserState = userUIState as? UserUIState.Success ?: return
+        val firebaseUser = auth.currentUser ?: return
+        val email = firebaseUser.email ?: return
+
+        userUIState = UserUIState.Loading
+
+        usersCollection.document(email)
+            .update("name", newName)
+            .addOnSuccessListener {
+                val updatedUser = currentUserState.user.copy(name = newName)
+                userUIState = UserUIState.Success(updatedUser)
+            }
+            .addOnFailureListener { e ->
+                Log.e("USERNAME_CHANGE","Username update failed", e)
+                userUIState = UserUIState.Error(e.localizedMessage ?: "Unknown error")
+            }
     }
 
 }
