@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Tracks(
     @SerialName("track")
+    @Serializable(SafeListToTrackSerializer::class)
     var track: List<Track?>?
 )
