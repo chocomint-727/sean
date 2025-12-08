@@ -1,6 +1,7 @@
 package hu.bme.ait.sean.nav
 
 import androidx.navigation3.runtime.NavKey
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.serialization.Serializable
 
 @Serializable

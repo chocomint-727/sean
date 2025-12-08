@@ -21,6 +21,7 @@ import hu.bme.ait.sean.nav.HomeScreenRoute
 import hu.bme.ait.sean.nav.LoginScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
 import hu.bme.ait.sean.ui.screen.album.DetailScreen
+import hu.bme.ait.sean.ui.screen.home.HomeScreen
 import hu.bme.ait.sean.ui.screen.login.LoginScreen
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
@@ -56,11 +57,13 @@ fun NavGraph(modifier: Modifier) {
         entryProvider  = entryProvider {
             entry<LoginScreenRoute>{
                 LoginScreen(
-                    onLoginSuccess = {  }
+                    onLoginSuccess = {
+                        backStack.add(HomeScreenRoute)
+                    }
                 )
             }
             entry<HomeScreenRoute> {
-//                /**/HomeScreen()
+                HomeScreen()
             }
             entry<DetailScreenRoute> { (albumName, artistName) ->
                 DetailScreen(albumName, artistName, modifier = modifier)

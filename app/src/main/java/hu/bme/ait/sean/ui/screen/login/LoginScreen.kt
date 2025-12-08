@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseUser
 import hu.bme.ait.sean.ui.theme.Background1
 import hu.bme.ait.sean.ui.theme.Background2
 import hu.bme.ait.sean.ui.theme.Primary
@@ -46,7 +47,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: () -> Unit //go to user profile page
+    onLoginSuccess: (FirebaseUser?) -> Unit //go to user profile page
 ) {
     var showPassword by rememberSaveable { mutableStateOf(false) }
     var email by rememberSaveable { mutableStateOf("sean@gimble.com") }
@@ -93,9 +94,9 @@ fun LoginScreen(
             label = {
                 Text("Password")
             },
-            value = email,
+            value = password,
             onValueChange = {
-                email = it
+                password = it
             },
             singleLine = true,
             visualTransformation = if (showPassword) VisualTransformation.None
@@ -126,7 +127,7 @@ fun LoginScreen(
                     coroutineScope.launch {
                         val result = viewModel.loginUser(email, password)
                         if (result?.user != null) {
-                            onLoginSuccess()
+                            onLoginSuccess(result.user)
                         }
                     }
                 },
