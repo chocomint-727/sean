@@ -9,8 +9,11 @@ import hu.bme.ait.sean.network.LastFMAPI
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import javax.inject.Singleton
+
+
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -18,7 +21,12 @@ object APIModule {
     @Provides
     @Singleton
     fun provideMusicAPIRetrofit(): Retrofit {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
         val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
             .build()
 
         return Retrofit.Builder()

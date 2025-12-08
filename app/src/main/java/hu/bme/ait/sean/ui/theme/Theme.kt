@@ -1,5 +1,6 @@
 package hu.bme.ait.sean.ui.theme
 
+import SeanTypography
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -52,7 +53,7 @@ fun SeanTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = SeanTypography,
         content = content
     )
 }

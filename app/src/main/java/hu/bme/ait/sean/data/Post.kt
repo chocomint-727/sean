@@ -7,7 +7,7 @@ data class Post (
     var author : String = "",
     var postDate : Timestamp = Timestamp.now(),
     var albumID : String = "",
-    var rating : Int = 0,
+    var rating : Float = 0f,
     var postBody : String = ""
 )
 

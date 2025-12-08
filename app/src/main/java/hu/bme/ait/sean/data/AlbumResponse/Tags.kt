@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Tags(
     @SerialName("tag")
-    var tag: List<Tag?>?
+    @Serializable(SafeListToObjectSerializer::class)
+    var tag: List<Tag?>? = emptyList()
 )

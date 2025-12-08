@@ -19,11 +19,12 @@ data class Album(
     @SerialName("playcount")
     var playcount: String?,
     @SerialName("tags")
+    @Serializable(with = SafeListToStringSerializer::class)
     var tags: Tags?,
     @SerialName("tracks")
-    var tracks: Tracks?,
+    var tracks: Tracks? = null,
     @SerialName("url")
     var url: String?,
     @SerialName("wiki")
-    var wiki: Wiki?
+    var wiki: Wiki? = null
 )
