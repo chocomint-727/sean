@@ -109,4 +109,7 @@ dependencies {
     // Gen AI
     implementation(libs.generativeai)
     implementation(libs.accompanist.permissions)
+
+    //Splash Screen
+    implementation("androidx.core:core-splashscreen:1.2.0")
 }
