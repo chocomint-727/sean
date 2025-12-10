@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import hu.bme.ait.sean.R
 import hu.bme.ait.sean.data.SearchResponse.SearchAlbum
 import kotlin.math.abs
 
@@ -79,7 +81,21 @@ fun SearchScreen(
 
         when (viewModel.searchUIState){
             is SearchUIState.Init ->{
-
+                Column (
+                    Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    AsyncImage(
+                        model = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRarPS_05NoojyN70zdA8VR9NgpeBSw8DwuZg&s",
+                        contentDescription = "",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    )
+                    Text("Album of the Day:")
+                    Text("Boolymon - outstanding")
+                }
             }
             is SearchUIState.Loading -> {
                 Column (
