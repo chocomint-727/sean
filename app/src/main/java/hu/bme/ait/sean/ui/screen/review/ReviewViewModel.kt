@@ -10,16 +10,15 @@ import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
-import com.google.type.DateTime
-import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.StoredAlbumData
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.DetailViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import kotlin.text.ifEmpty
 
 
 sealed interface WriteReviewUIState {
@@ -38,7 +37,7 @@ class ReviewViewModel : ViewModel() {
 
     init {
         auth = Firebase.auth
-        Firebase.firestore.collection("users").document(auth.currentUser!!.email!!).get()
+        Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
             .addOnSuccessListener {
                 user = it.toObject(User::class.java)!!
             }
@@ -70,7 +69,8 @@ class ReviewViewModel : ViewModel() {
             val albumToUpload  = StoredAlbumData(
                 name = album,
                 artist = artist,
-                img_url = img_url
+                img_url = img_url,
+                reviewUids = listOf(auth.uid!!)
             )
 
             val db = Firebase.firestore
@@ -79,39 +79,43 @@ class ReviewViewModel : ViewModel() {
             docRef.get()
                 .addOnSuccessListener { document ->
                     if (document.data == null) {
-                        Log.d("CREATE_REVIEW", "Didn't find document, creating...")
-                        db.collection("albums")
-                            .document(id)
-                            .set(albumToUpload)
-                            .addOnSuccessListener {
-                                db.collection(DetailViewModel.REVIEW_COLLECTION)
-                                    .add(postToUpload)
-                                    .addOnSuccessListener {
-                                        writeReviewUIState = WriteReviewUIState.Success
-                                        Log.d("POST_REVIEW", "posted review to ${albumID.ifEmpty { "$album - $artist" }}")
-                                    }
-                                    .addOnFailureListener {
-                                        writeReviewUIState = WriteReviewUIState.Error(it.message!!)
-                                    }
-                            }
+                        createAlbumRecord(id, albumToUpload, postToUpload)
                     } else {
                         Log.d("CREATE_REVIEW", "Found document! ignoring...")
                         Log.d("CREATE_REVIEW", "DocumentSnapshot data: ${document.data}")
-                        db.collection(DetailViewModel.REVIEW_COLLECTION)
-                            .add(postToUpload)
-                            .addOnSuccessListener {
-                                writeReviewUIState = WriteReviewUIState.Success
-                                Log.d("POST_REVIEW", "posted review to ${albumID.ifEmpty { "$album - $artist" }}")
-                            }
-                            .addOnFailureListener {
-                                writeReviewUIState = WriteReviewUIState.Error(it.message!!)
-                            }
+                        docRef.update("reviewUids",
+                            FieldValue.arrayUnion(auth.uid!!)
+                            )
+                        postReview(postToUpload)
                     }
                 }
                 .addOnFailureListener {
                     writeReviewUIState = WriteReviewUIState.Error(it.message!!)
                 }
         }
+    }
+
+    fun createAlbumRecord(id : String, albumToUpload: StoredAlbumData, postToUpload : Post){
+        val db = Firebase.firestore
+        Log.d("CREATE_REVIEW", "Didn't find document, creating...")
+        db.collection("albums")
+            .document(id)
+            .set(albumToUpload)
+            .addOnSuccessListener {
+                postReview(postToUpload)
+            }
+    }
+
+    fun postReview(postToUpload : Post) {
+        val db = Firebase.firestore
+        db.collection(DetailViewModel.REVIEW_COLLECTION)
+            .add(postToUpload)
+            .addOnSuccessListener {
+                writeReviewUIState = WriteReviewUIState.Success
+            }
+            .addOnFailureListener {
+                writeReviewUIState = WriteReviewUIState.Error(it.message!!)
+            }
     }
 
     fun runAfterDelay(
