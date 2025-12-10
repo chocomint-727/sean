@@ -400,14 +400,15 @@ fun ReviewCard(
             Column(
                 modifier = Modifier
                     .padding(10.dp)
-                    .weight(1f)
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
                     userData.value!!.pfpURL,
                     contentDescription = "Profile",
                     modifier = Modifier
-                        .size(50.dp, 50.dp))// profile pic
-                Text(post.author, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Clip)
+                        .size(75.dp, 75.dp))// profile pic
+                Text(post.author, fontSize = 12.sp, maxLines = if (!expanded) 1 else Int.MAX_VALUE, overflow = TextOverflow.Ellipsis)
             }
 
             Column(
