@@ -5,5 +5,4 @@ data class User (
     val email : String = "",
     val name : String = "",
     val pfpURL : String = "",
-    val uid : String = ""
 )

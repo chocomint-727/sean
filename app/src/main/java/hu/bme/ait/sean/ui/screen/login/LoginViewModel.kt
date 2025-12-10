@@ -8,6 +8,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import hu.bme.ait.sean.data.User
 import kotlinx.coroutines.tasks.await
 
 sealed interface LoginUiState {
@@ -35,8 +37,21 @@ class LoginViewModel : ViewModel() {
 
         try {
             auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener {
-                    loginUiState = LoginUiState.RegisterSuccess
+                .addOnSuccessListener { res ->
+                    Firebase.firestore.collection("users")
+                        .document(res.user!!.uid)
+                        .set(
+                            User(
+                                bio = "I am Sean from Gimble",
+                                email = email,
+                                name = "Sean",
+                                pfpURL = ""
+                            )
+                        )
+                        .addOnSuccessListener {
+                            loginUiState = LoginUiState.RegisterSuccess
+                        }
+
                 }
                 .addOnFailureListener {
                     loginUiState = LoginUiState.Error(it.localizedMessage)

@@ -86,10 +86,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import hu.bme.ait.sean.data.AlbumResponse.Album
 import hu.bme.ait.sean.data.Post
+import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.theme.Primary
+import kotlinx.coroutines.flow.Flow
 import kotlin.math.max
 
 fun ignoreCaseOpt(ignoreCase: Boolean) =
@@ -354,7 +357,7 @@ fun DetailScreen(
                             .fillMaxSize()
                     ) {
                         items(items = (postListState.value as PostDetailsUIState.Success).posts) {
-                            ReviewCard(it.post)
+                            ReviewCard(it.post, { viewModel.getUserData(it) })
                         }
                     }
                 }
@@ -365,9 +368,13 @@ fun DetailScreen(
 
 @Composable
 fun ReviewCard(
-    post: Post
+    post: Post,
+    userDataFlowFunction : (String) -> Flow<User?>
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var userData = userDataFlowFunction(post.uid).collectAsState(
+        User()
+    )
 
     Card(
         elevation = CardDefaults.cardElevation(10.dp),
@@ -393,7 +400,7 @@ fun ReviewCard(
                 modifier = Modifier
                     .padding(10.dp)
             ) {
-                // AsyncImage()// profile pic
+                //AsyncImage(userData.)// profile pic
                 Text(post.author, fontSize = 12.sp)
             }
 
