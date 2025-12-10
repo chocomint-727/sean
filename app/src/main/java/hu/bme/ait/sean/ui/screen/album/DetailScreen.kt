@@ -129,10 +129,6 @@ fun DetailScreen(
 
     val ctx = LocalContext.current
 
-    val postListState = viewModel.loadReviews().collectAsState(
-        initial = PostDetailsUIState.Loading
-    )
-
     var showInfo by remember { mutableStateOf(false) }
 
     var albumCoverTargetSize by remember { mutableFloatStateOf(1f) }
@@ -338,28 +334,27 @@ fun DetailScreen(
         }
 
 
-        when (postListState.value) {
-            is PostDetailsUIState.Loading -> {
-                CircularProgressIndicator()
-            }
-
-            is PostDetailsUIState.Error -> {
-                Text("Error Loading Posts: \n${(postListState.value as PostDetailsUIState.Error).msg}")
-                Log.d("ERROR_TEXT", (postListState.value as PostDetailsUIState.Error).msg)
-            }
-
-            is PostDetailsUIState.Success -> {
-                Box(
-                    modifier = Modifier.fillMaxSize()
+        if (viewModel.storedAlbumData == null) {
+            CircularProgressIndicator()
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxSize()
                 ) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxSize()
-                    ) {
-                        items(items = (postListState.value as PostDetailsUIState.Success).posts) {
-                            ReviewCard(it.post, { viewModel.getUserData(it) })
-                        }
+                    items(items = viewModel.storedAlbumData!!.albumData.reviewUids) {
+                        ReviewCard(
+                            it,
+                            {
+                                viewModel.loadReviews(it)
+                            },
+                            {
+                                viewModel.getUserData(it)
+                            }
+                        )
                     }
                 }
             }
@@ -369,12 +364,16 @@ fun DetailScreen(
 
 @Composable
 fun ReviewCard(
-    post: Post,
+    uid : String,
+    uidPostsFlowFunction : (String) -> Flow<PostDetailsUIState>,
     userDataFlowFunction : (String) -> Flow<User?>
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var userData = userDataFlowFunction(post.uid).collectAsState(
+    var userData = userDataFlowFunction(uid).collectAsState(
         User()
+    )
+    val postListState = uidPostsFlowFunction(uid).collectAsState(
+        initial = PostDetailsUIState.Loading
     )
 
     Card(
@@ -408,7 +407,7 @@ fun ReviewCard(
                     contentDescription = "Profile",
                     modifier = Modifier
                         .size(75.dp, 75.dp))// profile pic
-                Text(post.author, fontSize = 12.sp, maxLines = if (!expanded) 1 else Int.MAX_VALUE, overflow = TextOverflow.Ellipsis)
+                Text(userData.value!!.name, fontSize = 12.sp, maxLines = if (!expanded) 1 else Int.MAX_VALUE, overflow = TextOverflow.Ellipsis)
             }
 
             Column(
@@ -416,24 +415,68 @@ fun ReviewCard(
                     .padding(10.dp)
                     .weight(6f)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    for (i in 1..5) {
-                        Icon(
-                            if (post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
-                            contentDescription = "star"
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        "%.1f".format(post.rating) + " / 5",
-                        fontSize = 24.sp
-                    )
-                }
 
-                if (expanded) {
-                    Text(post.postBody, fontSize = 16.sp, fontWeight = FontWeight.W300)
+                when (val postState = postListState.value) {
+                    is PostDetailsUIState.Loading -> {
+                        CircularProgressIndicator()
+                    }
+                    is PostDetailsUIState.Error -> {
+                        Text(postState.msg)
+                    }
+                    is PostDetailsUIState.Success -> {
+                        val post = postState.posts[0].post
+                        Column {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                for (i in 1..5) {
+                                    Icon(
+                                        if (post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
+                                        contentDescription = "star"
+                                    )
+                                }
+                                Spacer(Modifier.weight(1f))
+                                Text(
+                                    "%.1f".format(post.rating) + " / 5",
+                                    fontSize = 24.sp
+                                )
+                            }
+
+                            Text(post.postBody, fontSize = 16.sp, fontWeight = FontWeight.W300)
+
+                        }
+
+                        if (expanded) {
+
+                            Column {
+                                postState.posts.drop(1).forEach {
+                                Column {
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        for (i in 1..5) {
+                                            Icon(
+                                                if (it.post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
+                                                contentDescription = "star"
+                                            )
+                                        }
+                                        Spacer(Modifier.weight(1f))
+                                        Text(
+                                            "%.1f".format(it.post.rating) + " / 5",
+                                            fontSize = 24.sp
+                                        )
+                                    }
+
+                                    Text(
+                                        it.post.postBody,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.W300
+                                    )
+                                }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
