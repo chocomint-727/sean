@@ -66,6 +66,7 @@ fun SearchScreen(
                     Icon(Icons.Filled.Search, "Search")
                 }
             },
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
                 .onFocusChanged(){focus ->
                     if (!focus.hasFocus && searchText.isNotEmpty()){
@@ -77,6 +78,9 @@ fun SearchScreen(
         HorizontalDivider(modifier = Modifier.padding(8.dp))
 
         when (viewModel.searchUIState){
+            is SearchUIState.Init ->{
+
+            }
             is SearchUIState.Loading -> {
                 Column (
                     Modifier.fillMaxSize(),
