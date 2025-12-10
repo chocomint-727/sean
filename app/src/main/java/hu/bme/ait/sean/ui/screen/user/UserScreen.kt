@@ -93,7 +93,6 @@ fun UserScreen(
                             )
                         }
                     }
-<<<<<<< HEAD
                 }
             )
         },
@@ -126,8 +125,8 @@ fun UserScreen(
                                 }
                             }
                         }
-=======
-                )
+                    }
+
             }
         }
         Spacer(modifier = Modifier.padding(2.dp))
@@ -148,11 +147,11 @@ fun UserScreen(
                 ){
                     items(state.posts) {
                         UserReviewCard(it.post, { id -> viewModel.getAlbumData(id) }, toDetailsScreen)
->>>>>>> 0e0ed7ee313f7dafe5be898ee262ab56981e3e2e
                     }
                 }
             }
-    })
+    }
+})
 }
 
 @Composable
