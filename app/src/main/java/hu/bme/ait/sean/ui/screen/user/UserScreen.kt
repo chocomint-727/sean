@@ -71,8 +71,6 @@ fun UserScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val showUsernameEditDialog by rememberSaveable { mutableStateOf(true)}
-
     DoubleBackPressExit(snackbarHostState)
     Column(
             modifier = Modifier
@@ -83,7 +81,11 @@ fun UserScreen(
             is UserUIState.Init -> {
                 UserCard(
                     user = User(),
-                    onNameChange = {})
+                    onBioChange = { newName, newBio ->
+                        viewModel.updateUsername(newName)
+                        viewModel.updateBio(newBio)
+                    }
+                )
             }
 
             is UserUIState.Loading -> {
@@ -99,11 +101,12 @@ fun UserScreen(
             }
 
             is UserUIState.Success -> {
-                Column() {
+                Column {
                     UserCard(
                         user = state.user,
-                        onNameChange = { newName ->
+                        onBioChange = { newName, newBio ->
                             viewModel.updateUsername(newName)
+                            viewModel.updateBio(newBio)
                         }
                     )
                     Spacer(modifier = Modifier.padding(2.dp))
@@ -112,7 +115,11 @@ fun UserScreen(
 
                     when (val state = userPosts.value) {
                         is PostDetailsUIState.Loading -> {
-                            CircularProgressIndicator()
+                            Spacer(Modifier.size(240.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(100.dp),
+                                color = Primary
+                            )
                         }
 
                         is PostDetailsUIState.Error -> {
@@ -143,11 +150,12 @@ fun UserScreen(
 @Composable
 fun UserCard(
     user : User,
-    onNameChange: (String) -> Unit
+    onBioChange: (String, String) -> Unit
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var nameText by rememberSaveable (user.name) { mutableStateOf(user.name) }
-
+    var bioText by rememberSaveable (user.bio) { mutableStateOf(user.bio) }
+    
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
         modifier = Modifier.fillMaxWidth(),
@@ -184,7 +192,14 @@ fun UserCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                 )
-
+                                OutlinedTextField(
+                                    value = bioText,
+                                    onValueChange = {bioText = it},
+                                    singleLine = true,
+                                    label = {Text("Bio")},
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                )
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -192,7 +207,7 @@ fun UserCard(
                                     TextButton(
                                         onClick = {
                                             if (nameText.isNotBlank()) {
-                                                onNameChange(nameText)
+                                                onBioChange(nameText, bioText)
                                                 isEditing = false
                                             }
                                         }
@@ -202,6 +217,7 @@ fun UserCard(
                                     TextButton(
                                         onClick = {
                                             nameText = user.name
+                                            bioText = user.bio
                                             isEditing = false
                                         }
                                     ) {
@@ -211,17 +227,16 @@ fun UserCard(
                             }
                         }
                     }
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(user.name, fontSize = 24.sp, modifier = Modifier.padding(10.dp))
-                        IconButton(onClick = {isEditing = true}) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = ""
-                            )
-                        }
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(user.name, fontSize = 24.sp, modifier = Modifier.padding(10.dp))
+                    IconButton(onClick = {isEditing = true}) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = ""
+                        )
                     }
                 }
                 Text(user.bio, fontSize = 16.sp, modifier = Modifier.padding(10.dp))

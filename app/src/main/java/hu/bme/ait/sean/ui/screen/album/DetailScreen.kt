@@ -106,7 +106,6 @@ fun String?.indexesOf(pat: String, ignoreCase: Boolean = true): List<Int> =
         .toList()
 
 fun Modifier.realOffset(y: Dp) = layout { measurable, constraints ->
-
     val yPx = y.roundToPx()
     val newConst = constraints.copy(maxHeight = constraints.maxHeight - yPx, minHeight = constraints.minHeight - yPx)
     val placeable = measurable.measure(newConst)

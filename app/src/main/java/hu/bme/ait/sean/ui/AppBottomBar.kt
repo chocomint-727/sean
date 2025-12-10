@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
+import hu.bme.ait.sean.nav.DetailScreenRoute
 import hu.bme.ait.sean.nav.SearchScreenRoute
 import hu.bme.ait.sean.nav.UserScreenRoute
 import hu.bme.ait.sean.ui.theme.Background1
@@ -26,11 +27,6 @@ data class BottomDestination(
 )
 
 private val bottomDestinations = listOf(
-    /*BottomDestination(
-        route = HomeScreenRoute,
-        label = "Home",
-        icon = Icons.Filled.Home
-    ),*/
     BottomDestination(
         route = SearchScreenRoute,
         label = "Search",

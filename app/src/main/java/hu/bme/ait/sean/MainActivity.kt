@@ -27,6 +27,7 @@ import hu.bme.ait.sean.nav.UserScreenRoute
 import hu.bme.ait.sean.ui.AppBottomBar
 import hu.bme.ait.sean.ui.screen.album.DetailScreen
 import hu.bme.ait.sean.ui.screen.login.LoginScreen
+import hu.bme.ait.sean.ui.screen.otheruser.OtherUserScreen
 import hu.bme.ait.sean.ui.screen.review.ReviewScreen
 import hu.bme.ait.sean.ui.screen.search.SearchScreen
 import hu.bme.ait.sean.ui.screen.user.UserScreen
@@ -102,7 +103,9 @@ fun NavGraph(
                 }
             }
             entry<OtherUserScreenRoute> {
-
+                OtherUserScreen { album, artist ->
+                    backStack.add(DetailScreenRoute(album, artist))
+                }
             }
             entry<SearchScreenRoute> {
                 SearchScreen { album, artist ->

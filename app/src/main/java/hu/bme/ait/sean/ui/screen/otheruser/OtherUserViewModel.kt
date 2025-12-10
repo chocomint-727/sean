@@ -1,4 +1,4 @@
-package hu.bme.ait.sean.ui.screen.user
+package hu.bme.ait.sean.ui.screen.otheruser
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -17,34 +17,33 @@ import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 
-sealed interface UserUIState {
-    object Init : UserUIState
-    object Loading : UserUIState
-    data class Success (val user : User) : UserUIState
-    data class Error (val msg : String) : UserUIState
+sealed interface OtherUserUIState {
+    object Init : OtherUserUIState
+    object Loading : OtherUserUIState
+    data class Success (val user : User) : OtherUserUIState
+    data class Error (val msg : String) : OtherUserUIState
 }
 
-class UserViewModel : ViewModel() {
-
-    var userUIState : UserUIState by mutableStateOf(UserUIState.Init)
+class OtherUserViewModel : ViewModel() {
+    var otherUserUIState : OtherUserUIState by mutableStateOf(OtherUserUIState.Init)
     private lateinit var auth : FirebaseAuth
 
     private val usersCollection = Firebase.firestore.collection("users")
 
     init {
-        userUIState = UserUIState.Loading
+        otherUserUIState = OtherUserUIState.Loading
         auth = Firebase.auth
         Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
             .addOnSuccessListener {
-                userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
+                otherUserUIState = OtherUserUIState.Success(user = it.toObject(User::class.java)!!)
             }
             .addOnFailureListener {
-                userUIState = UserUIState.Error(msg = it.localizedMessage!!)
+                otherUserUIState = OtherUserUIState.Error(msg = it.localizedMessage!!)
             }
     }
 
     fun loadReviewsForUser() = callbackFlow {
-        val success = userUIState as? UserUIState.Success
+        val success = otherUserUIState as? OtherUserUIState.Success
         if (success == null){
             trySend(PostDetailsUIState.Loading)
             close()
@@ -80,7 +79,7 @@ class UserViewModel : ViewModel() {
     }
 
     fun getAlbumData(id : String) = callbackFlow {
-        val success = userUIState as? UserUIState.Success
+        val success = otherUserUIState as? OtherUserUIState.Success
         if (success == null){
             trySend(StoredAlbumData())
             close()
@@ -108,40 +107,21 @@ class UserViewModel : ViewModel() {
     }
 
     fun updateUsername(newName: String){
-        val currentUserState = userUIState as? UserUIState.Success ?: return
+        val currentUserState = otherUserUIState as? OtherUserUIState.Success ?: return
         val firebaseUser = auth.currentUser ?: return
         val uid = firebaseUser.uid
 
-        userUIState = UserUIState.Loading
+        otherUserUIState = OtherUserUIState.Loading
 
         usersCollection.document(uid)
             .update("name", newName)
             .addOnSuccessListener {
                 val updatedUser = currentUserState.user.copy(name = newName)
-                userUIState = UserUIState.Success(updatedUser)
+                otherUserUIState = OtherUserUIState.Success(updatedUser)
             }
             .addOnFailureListener { e ->
                 Log.e("USERNAME_CHANGE","Username update failed", e)
-                userUIState = UserUIState.Error(e.localizedMessage ?: "Unknown error")
-            }
-    }
-
-    fun updateBio(newBio: String) {
-        val currentUserState = userUIState as? UserUIState.Success ?: return
-        val firebaseUser = auth.currentUser ?: return
-        val uid = firebaseUser.uid
-
-        userUIState = UserUIState.Loading
-
-        usersCollection.document(uid)
-            .update("bio", newBio)
-            .addOnSuccessListener {
-                val updatedUser = currentUserState.user.copy(name = newBio)
-                userUIState = UserUIState.Success(updatedUser)
-            }
-            .addOnFailureListener { e ->
-                Log.e("BIO_CHANGE","Bio change update failed", e)
-                userUIState = UserUIState.Error(e.localizedMessage ?: "Unknown error")
+                otherUserUIState = OtherUserUIState.Error(e.localizedMessage ?: "Unknown error")
             }
     }
 
