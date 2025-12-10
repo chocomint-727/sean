@@ -161,7 +161,6 @@ fun UserCard(
                     }
                 }
                 Text(user.email, fontSize = 16.sp)
-                Text(user.uid, fontSize = 12.sp, fontWeight = FontWeight.W200)
             }
         }
     }

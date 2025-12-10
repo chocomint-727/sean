@@ -38,7 +38,7 @@ class UserViewModel : ViewModel() {
     init {
         userUIState = UserUIState.Loading
         auth = Firebase.auth
-        Firebase.firestore.collection("users").document(auth.currentUser!!.email!!).get()
+        Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
             .addOnSuccessListener {
                 userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
             }
