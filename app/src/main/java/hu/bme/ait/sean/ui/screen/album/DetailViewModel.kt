@@ -26,6 +26,7 @@ import javax.inject.Inject
 import androidx.core.net.toUri
 import com.google.ai.client.generativeai.type.content
 import hu.bme.ait.sean.data.StoredAlbumData
+import hu.bme.ait.sean.data.StoredAlbumDataID
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.user.UserUIState
 
@@ -46,6 +47,8 @@ sealed interface PostDetailsUIState {
 class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
     var albumDetailsUIState: AlbumDetailsUIState by mutableStateOf(AlbumDetailsUIState.Loading)
+
+    var storedAlbumData : StoredAlbumDataID? by mutableStateOf(null)
 
     private lateinit var user : User
     private lateinit var auth: FirebaseAuth
@@ -69,11 +72,34 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
         albumDetailsUIState = AlbumDetailsUIState.Loading
         try {
             viewModelScope.launch {
-                albumDetailsUIState = AlbumDetailsUIState.Success(api.getAlbumInfo(album, artist))
-
+                val res = api.getAlbumInfo(album, artist)
+                albumDetailsUIState = AlbumDetailsUIState.Success(res)
+                getStoredAlbumData(res.album!!.mbid ?: "${res.album!!.name} - ${res.album!!.artist}")
             }
         } catch (e: Exception) {
             albumDetailsUIState = AlbumDetailsUIState.Error(e.message!!)
+        }
+    }
+
+    fun getStoredAlbumData(id : String)  {
+        viewModelScope.launch {
+            val doc = Firebase.firestore.collection("albums").document(id)
+            doc.get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot!!.data != null) {
+                        storedAlbumData = StoredAlbumDataID(
+                            documentSnapshot.toObject(StoredAlbumData::class.java) ?: StoredAlbumData(),
+                            id
+                        )
+                    } else {
+                        Log.d("LOAD_ALBUM_DATA", "document was null")
+                        storedAlbumData = StoredAlbumDataID()
+                    }
+                }
+                .addOnFailureListener {
+                    Log.d("LOAD_ALBUM_DATA", "failed to fetch with error ${it.localizedMessage}")
+                    storedAlbumData = StoredAlbumDataID()
+                }
         }
     }
 
@@ -99,19 +125,21 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
         }
     }
 
-    fun loadReviews() = callbackFlow {
-        val success = albumDetailsUIState as? AlbumDetailsUIState.Success
-        if (success == null){
+    fun loadReviews(uid : String) = callbackFlow {
+        if (storedAlbumData == null){
             trySend(PostDetailsUIState.Loading)
             close()
             return@callbackFlow
         }
 
+        val success = storedAlbumData!!
+
         val snapshotListener = Firebase.firestore.collection(REVIEW_COLLECTION)
             .orderBy("postDate")
+            .whereEqualTo("uid", uid)
             .whereEqualTo(
                 "albumID",
-                success.res.album?.mbid!!.ifEmpty() { "${success.res.album?.name} - ${success.res.album?.artist}" }
+                success.id
             )
             .addSnapshotListener { snapshot, e ->
                 val res = if (snapshot != null) {
@@ -129,7 +157,7 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
                     PostDetailsUIState.Success(postListWithIDs)
                 } else {
-                    PostDetailsUIState.Error((e?.localizedMessage ?: "") + " for album id ${success.res.album?.mbid}")
+                    PostDetailsUIState.Error((e?.localizedMessage ?: "") + " for album id ${success.id}")
                 }
 
                 trySend(res)

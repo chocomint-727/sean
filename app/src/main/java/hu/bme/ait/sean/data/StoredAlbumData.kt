@@ -12,6 +12,6 @@ data class StoredUID (
 )
 
 data class StoredAlbumDataID (
-    val albumData: StoredAlbumData,
-    val id : String
+    val albumData: StoredAlbumData = StoredAlbumData(),
+    val id : String = ""
 )
