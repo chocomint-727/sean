@@ -52,7 +52,7 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
     init {
         auth = Firebase.auth
-        Firebase.firestore.collection("users").document(auth.currentUser!!.email!!).get()
+        Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
             .addOnSuccessListener {
                 user = it.toObject(User::class.java)!!
             }
