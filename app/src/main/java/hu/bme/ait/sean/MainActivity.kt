@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NavGraph(
     modifier: Modifier,
-    backStack: NavBackStack<NavKey> //tspmo bruh
+    backStack: NavBackStack<NavKey> //
 ) {
     NavDisplay(
         modifier = modifier,
@@ -88,6 +88,7 @@ fun NavGraph(
             entry<LoginScreenRoute> {
                 LoginScreen(
                     onLoginSuccess = {
+                        backStack.removeLastOrNull()
                         backStack.add(UserScreenRoute) // go to user after login
                     }
                 )
