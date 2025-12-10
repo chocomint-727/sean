@@ -1,12 +1,10 @@
 package hu.bme.ait.sean.ui.screen.user
 
 import android.util.Log
-import androidx.compose.animation.core.snap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -14,12 +12,10 @@ import com.google.firebase.firestore.firestore
 import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.PostID
 import hu.bme.ait.sean.data.StoredAlbumData
-import hu.bme.ait.sean.data.StoredAlbumDataID
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 
 sealed interface UserUIState {
     object Init : UserUIState

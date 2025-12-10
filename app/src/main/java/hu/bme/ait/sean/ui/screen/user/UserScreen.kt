@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,7 +35,6 @@ import coil.compose.AsyncImage
 import com.revenuecat.placeholder.placeholder
 import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.StoredAlbumData
-import hu.bme.ait.sean.data.StoredAlbumDataID
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
