@@ -2,8 +2,10 @@ package hu.bme.ait.sean.ui.screen.user
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -75,8 +77,9 @@ fun UserScreen(
                 )
             }
         }
-
+        Spacer(modifier = Modifier.padding(2.dp))
         HorizontalDivider()
+        Spacer(modifier = Modifier.padding(2.dp))
 
         when (val state = userPosts.value) {
             is PostDetailsUIState.Loading -> {
@@ -87,7 +90,9 @@ fun UserScreen(
                 Log.d("ERROR_TEXT", state.msg)
             }
             is PostDetailsUIState.Success -> {
-                LazyColumn {
+                LazyColumn (
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ){
                     items(state.posts) {
                         UserReviewCard(it.post, { id -> viewModel.getAlbumData(id) }, toDetailsScreen)
                     }
@@ -122,7 +127,8 @@ fun UserCard(
                         onValueChange = {nameText = it},
                         singleLine = true,
                         label = {Text("Username")},
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                     )
 
                     Row(
@@ -151,7 +157,7 @@ fun UserCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(user.name, fontSize = 24.sp)
+                        Text(user.name, fontSize = 24.sp, modifier = Modifier.padding(10.dp))
                         IconButton(onClick = {isEditing = true}) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -160,7 +166,7 @@ fun UserCard(
                         }
                     }
                 }
-                Text(user.email, fontSize = 16.sp)
+                Text(user.email, fontSize = 16.sp, modifier = Modifier.padding(10.dp))
             }
         }
     }
