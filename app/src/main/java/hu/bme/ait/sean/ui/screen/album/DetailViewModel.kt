@@ -25,7 +25,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.google.ai.client.generativeai.type.content
+import hu.bme.ait.sean.data.StoredAlbumData
 import hu.bme.ait.sean.data.User
+import hu.bme.ait.sean.ui.screen.user.UserUIState
 
 
 sealed interface AlbumDetailsUIState {
@@ -72,6 +74,28 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             }
         } catch (e: Exception) {
             albumDetailsUIState = AlbumDetailsUIState.Error(e.message!!)
+        }
+    }
+
+    fun getUserData(id : String) = callbackFlow {
+
+        val doc = Firebase.firestore.collection("users").document(id)
+        doc.get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot!!.data != null){
+                    trySend(documentSnapshot.toObject(User::class.java))
+                } else {
+                    Log.d("LOAD_USER_DATA", "document was null")
+                    trySend(User())
+                }
+            }
+            .addOnFailureListener {
+                Log.d("LOAD_ALBUM_DATA", "failed to fetch with error ${it.localizedMessage}")
+                trySend(User())
+            }
+
+        awaitClose {
+            return@awaitClose
         }
     }
 

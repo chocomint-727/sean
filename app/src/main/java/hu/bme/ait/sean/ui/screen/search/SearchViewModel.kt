@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface SearchUIState {
+    object Init : SearchUIState
     object Loading : SearchUIState
     data class Success(val res : SearchResponse) : SearchUIState
     data class Error(val msg : String)  : SearchUIState
@@ -19,7 +20,7 @@ sealed interface SearchUIState {
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(val api : LastFMAPI) : ViewModel(){
-    var searchUIState : SearchUIState by mutableStateOf(SearchUIState.Loading)
+    var searchUIState : SearchUIState by mutableStateOf(SearchUIState.Init)
 
     fun search(query : String){
         viewModelScope.launch {
