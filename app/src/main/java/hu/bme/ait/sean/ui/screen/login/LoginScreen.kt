@@ -165,7 +165,13 @@ fun LoginScreen(
                     Text("Error: {${(viewModel.loginUiState as LoginUiState.Error).errorMessage}}")
                 }
                 LoginUiState.Init -> {}
-                LoginUiState.Loading -> CircularProgressIndicator()
+                LoginUiState.Loading -> {
+                        Spacer(Modifier.size(40.dp))
+                        CircularProgressIndicator(
+                        modifier = Modifier.size(80.dp),
+                        color = Primary
+                    )
+                }
                 LoginUiState.LoginSuccess -> Text("Success!")
                 LoginUiState.RegisterSuccess -> Text("User Registered!")
             }

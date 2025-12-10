@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -43,10 +42,20 @@ import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import hu.bme.ait.sean.ui.theme.Primary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -62,48 +71,45 @@ fun UserScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    DoubleBackPressExit(snackbarHostState = snackbarHostState)
+    val showUsernameEditDialog by rememberSaveable { mutableStateOf(true)}
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    when (val state = viewModel.userUIState) {
-                        is UserUIState.Init -> {
-                            UserCard(
-                                user = User(),
-                                onNameChange = {})
-                        }
+    DoubleBackPressExit(snackbarHostState)
+    Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+        when (val state = viewModel.userUIState) {
+            is UserUIState.Init -> {
+                UserCard(
+                    user = User(),
+                    onNameChange = {})
+            }
 
-                        is UserUIState.Loading -> {
-                            CircularProgressIndicator()
-                        }
+            is UserUIState.Loading -> {
+                Spacer(Modifier.size(300.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(180.dp),
+                    color = Primary
+                )
+            }
 
-                        is UserUIState.Error -> {
-                            Text("Error Loading User Details")
-                        }
+            is UserUIState.Error -> {
+                Text("Error Loading User Details")
+            }
 
-                        is UserUIState.Success -> {
-                            UserCard(
-                                user = state.user,
-                                onNameChange = { newName ->
-                                    viewModel.updateUsername(newName)
-                                }
-                            )
+            is UserUIState.Success -> {
+                Column() {
+                    UserCard(
+                        user = state.user,
+                        onNameChange = { newName ->
+                            viewModel.updateUsername(newName)
                         }
-                    }
-                }
-            )
-        },
-        containerColor = Color.Blue,
-        content = { innerPadding ->
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Column(
-                    modifier = Modifier.padding(innerPadding),
-                ) {
+                    )
+                    Spacer(modifier = Modifier.padding(2.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.padding(2.dp))
+
                     when (val state = userPosts.value) {
                         is PostDetailsUIState.Loading -> {
                             CircularProgressIndicator()
@@ -115,7 +121,9 @@ fun UserScreen(
                         }
 
                         is PostDetailsUIState.Success -> {
-                            LazyColumn {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
                                 items(state.posts) {
                                     UserReviewCard(
                                         it.post,
@@ -126,32 +134,10 @@ fun UserScreen(
                             }
                         }
                     }
-
-            }
-        }
-        Spacer(modifier = Modifier.padding(2.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.padding(2.dp))
-
-        when (val state = userPosts.value) {
-            is PostDetailsUIState.Loading -> {
-                CircularProgressIndicator()
-            }
-            is PostDetailsUIState.Error -> {
-                Text("Error Loading posts for user with ${state.msg}")
-                Log.d("ERROR_TEXT", state.msg)
-            }
-            is PostDetailsUIState.Success -> {
-                LazyColumn (
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ){
-                    items(state.posts) {
-                        UserReviewCard(it.post, { id -> viewModel.getAlbumData(id) }, toDetailsScreen)
-                    }
                 }
             }
+        }
     }
-})
 }
 
 @Composable
@@ -160,50 +146,70 @@ fun UserCard(
     onNameChange: (String) -> Unit
 ) {
     var isEditing by remember { mutableStateOf(false) }
-    var nameText by remember(user.name) {mutableStateOf(user.name)}
+    var nameText by rememberSaveable (user.name) { mutableStateOf(user.name) }
 
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RectangleShape
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically
         ) {
-            //AsyncImage()
+            AsyncImage(
+                user.pfpURL,
+                contentDescription = ""
+            )
             Column (
                 horizontalAlignment = Alignment.Start,
             ){
-                if(isEditing){
-                    OutlinedTextField(
-                        value = nameText,
-                        onValueChange = {nameText = it},
-                        singleLine = true,
-                        label = {Text("Username")},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                if (isEditing){
+                    Dialog(onDismissRequest = {
+                        isEditing = false
+                    }) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            shape = RoundedCornerShape(size = 6.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(15.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = nameText,
+                                    onValueChange = {nameText = it},
+                                    singleLine = true,
+                                    label = {Text("Username")},
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(
-                            onClick = {
-                                if (nameText.isNotBlank()) {
-                                    onNameChange(nameText)
-                                    isEditing = false
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    TextButton(
+                                        onClick = {
+                                            if (nameText.isNotBlank()) {
+                                                onNameChange(nameText)
+                                                isEditing = false
+                                            }
+                                        }
+                                    ) {
+                                        Text("Save")
+                                    }
+                                    TextButton(
+                                        onClick = {
+                                            nameText = user.name
+                                            isEditing = false
+                                        }
+                                    ) {
+                                        Text("Cancel")
+                                    }
                                 }
                             }
-                        ) {
-                            Text("Save")
                         }
-                    }
-                    TextButton(
-                        onClick = {
-                            nameText = user.name
-                            isEditing = false
-                        }
-                    ) {
-                        Text("Cancel")
                     }
                 } else {
                     Row(
@@ -218,7 +224,7 @@ fun UserCard(
                         }
                     }
                 }
-                Text(user.email, fontSize = 16.sp, modifier = Modifier.padding(10.dp))
+                Text(user.bio, fontSize = 16.sp, modifier = Modifier.padding(10.dp))
             }
         }
     }
@@ -236,7 +242,6 @@ fun UserReviewCard (
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()
         )
-
         Row {
             AsyncImage(
                 albumData.value?.img_url,
@@ -270,13 +275,7 @@ fun UserReviewCard (
 
     }
 }
-/**
- * Implements the "Press back again to exit" pattern using a Snackbar.
- *
- * @param snackbarHostState The state used to control the Snackbar's visibility.
- * @param exitDelayMillis The time window (in milliseconds) for the second press.
- * @param snackbarMessage The message to display in the Snackbar.
- */
+
 @Composable
 fun DoubleBackPressExit(
     snackbarHostState: SnackbarHostState,
@@ -290,29 +289,33 @@ fun DoubleBackPressExit(
     val coroutineScope = rememberCoroutineScope()
 
     // Handle the system back button press
-    BackHandler(enabled = true) {
-        if (backPressedOnce) {
-            // Second press within the time window: Exit the app/Activity
-            (context as? ComponentActivity)?.finish()
-        } else {
-            // First press: Set the flag and show the Snackbar
-            backPressedOnce = true
+    Box(
+        modifier = Modifier.size(0.dp)
+    ) {
+        BackHandler(enabled = true) {
+            if (backPressedOnce) {
+                // Second press within the time window: Exit the app/Activity
+                (context as? ComponentActivity)?.finish()
+            } else {
+                // First press: Set the flag and show the Snackbar
+                backPressedOnce = true
 
-            // Show the Snackbar
-            coroutineScope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = snackbarMessage,
-                    duration = SnackbarDuration.Short
-                )
-                // We don't necessarily need to check the result,
-                // but we launch a separate coroutine to reset the flag
-                // after the delay, regardless of the Snackbar's status.
-            }
+                // Show the Snackbar
+                coroutineScope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = snackbarMessage,
+                        duration = SnackbarDuration.Short
+                    )
+                    // We don't necessarily need to check the result,
+                    // but we launch a separate coroutine to reset the flag
+                    // after the delay, regardless of the Snackbar's status.
+                }
 
-            // Start a coroutine to reset the flag after the delay
-            coroutineScope.launch {
-                delay(exitDelayMillis)
-                backPressedOnce = false
+                // Start a coroutine to reset the flag after the delay
+                coroutineScope.launch {
+                    delay(exitDelayMillis)
+                    backPressedOnce = false
+                }
             }
         }
     }

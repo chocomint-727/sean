@@ -27,6 +27,8 @@ val Success = Color(0xff2c991d)
 
 val Primary = Color(0xfff19a3e) //hsl : 31, 86, 59
 
+val BottomPillIndicatorColor = Color(0xfffce9d6)
+
 val Warning = Color(0xffeac81b)
 
 //val Info =

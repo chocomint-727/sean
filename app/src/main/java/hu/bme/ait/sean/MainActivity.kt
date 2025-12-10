@@ -4,11 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -19,8 +19,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import hu.bme.ait.sean.nav.DetailScreenRoute
-import hu.bme.ait.sean.nav.HomeScreenRoute
 import hu.bme.ait.sean.nav.LoginScreenRoute
+import hu.bme.ait.sean.nav.OtherUserScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
 import hu.bme.ait.sean.nav.SearchScreenRoute
 import hu.bme.ait.sean.nav.UserScreenRoute
@@ -30,6 +30,7 @@ import hu.bme.ait.sean.ui.screen.login.LoginScreen
 import hu.bme.ait.sean.ui.screen.review.ReviewScreen
 import hu.bme.ait.sean.ui.screen.search.SearchScreen
 import hu.bme.ait.sean.ui.screen.user.UserScreen
+import hu.bme.ait.sean.ui.theme.Background1
 import hu.bme.ait.sean.ui.theme.SeanTheme
 
 @AndroidEntryPoint
@@ -43,7 +44,9 @@ class MainActivity : ComponentActivity() {
                 val backStack = rememberNavBackStack(LoginScreenRoute)
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Background1),
                     bottomBar = {
                         // hide bottom bar on login
                         val current = backStack.lastOrNull()
@@ -98,8 +101,8 @@ fun NavGraph(
                     backStack.add(DetailScreenRoute(album, artist))
                 }
             }
-            entry<HomeScreenRoute> {
-                // HomeScreen()
+            entry<OtherUserScreenRoute> {
+
             }
             entry<SearchScreenRoute> {
                 SearchScreen { album, artist ->

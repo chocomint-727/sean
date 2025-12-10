@@ -110,11 +110,11 @@ class UserViewModel : ViewModel() {
     fun updateUsername(newName: String){
         val currentUserState = userUIState as? UserUIState.Success ?: return
         val firebaseUser = auth.currentUser ?: return
-        val email = firebaseUser.email ?: return
+        val uid = firebaseUser.uid
 
         userUIState = UserUIState.Loading
 
-        usersCollection.document(email)
+        usersCollection.document(uid)
             .update("name", newName)
             .addOnSuccessListener {
                 val updatedUser = currentUserState.user.copy(name = newName)

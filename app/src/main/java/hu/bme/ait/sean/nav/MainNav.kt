@@ -20,8 +20,9 @@ data class ReviewScreenRoute(
 
 @Serializable
 data object SearchScreenRoute : NavKey
+
 @Serializable
-data object HomeScreenRoute : NavKey
+data object OtherUserScreenRoute: NavKey
 
 @Serializable
 data class DetailScreenRoute(
