@@ -1,6 +1,7 @@
 package hu.bme.ait.sean.ui.screen.user
 
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,19 +37,18 @@ import coil.compose.AsyncImage
 import com.revenuecat.placeholder.placeholder
 import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.StoredAlbumData
-import hu.bme.ait.sean.data.StoredAlbumDataID
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserScreen(
     viewModel: UserViewModel = viewModel(),
@@ -65,13 +64,9 @@ fun UserScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        content = { innerPadding ->
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Column(
-                    modifier = Modifier.padding(innerPadding)
-                ) {
+        topBar = {
+            TopAppBar(
+                title = {
                     when (val state = viewModel.userUIState) {
                         is UserUIState.Init -> {
                             UserCard(
@@ -96,9 +91,17 @@ fun UserScreen(
                             )
                         }
                     }
-
-                    HorizontalDivider()
-
+                }
+            )
+        },
+        containerColor = Color.Blue,
+        content = { innerPadding ->
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Column(
+                    modifier = Modifier.padding(innerPadding),
+                ) {
                     when (val state = userPosts.value) {
                         is PostDetailsUIState.Loading -> {
                             CircularProgressIndicator()
@@ -208,9 +211,7 @@ fun UserReviewCard (
             StoredAlbumData()
         )
 
-        Row(
-
-        ) {
+        Row {
             AsyncImage(
                 albumData.value?.img_url,
                 "Album Cover",
@@ -224,7 +225,7 @@ fun UserReviewCard (
                         toDetailsScreen(
                             albumData.value?.name ?: "throw error here i think",
                             albumData.value?.artist
-                                ?: "but it has to be graaceful and not crash the whole app"
+                                ?: "but it has to be graceful and not crash the whole app"
                         )
                     }
             )
@@ -266,7 +267,7 @@ fun DoubleBackPressExit(
     BackHandler(enabled = true) {
         if (backPressedOnce) {
             // Second press within the time window: Exit the app/Activity
-            (context as? androidx.activity.ComponentActivity)?.finish()
+            (context as? ComponentActivity)?.finish()
         } else {
             // First press: Set the flag and show the Snackbar
             backPressedOnce = true
