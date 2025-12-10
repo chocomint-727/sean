@@ -41,6 +41,14 @@ import hu.bme.ait.sean.data.StoredAlbumDataID
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun UserScreen(
@@ -51,50 +59,71 @@ fun UserScreen(
         initial = UserUIState.Init
     )
 
-    Column (
-        modifier = Modifier.padding(10.dp)
-    ){
-        when (val state = viewModel.userUIState) {
-            is UserUIState.Init -> {
-                UserCard(
-                    user = User(),
-                    onNameChange = {})
-            }
-            is UserUIState.Loading -> {
-                CircularProgressIndicator()
-            }
-            is UserUIState.Error -> {
-                Text("Error Loading User Details")
-            }
-            is UserUIState.Success -> {
-                UserCard(
-                    user = state.user,
-                    onNameChange = { newName ->
-                        viewModel.updateUsername(newName)
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    DoubleBackPressExit(snackbarHostState = snackbarHostState)
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        content = { innerPadding ->
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Column(
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    when (val state = viewModel.userUIState) {
+                        is UserUIState.Init -> {
+                            UserCard(
+                                user = User(),
+                                onNameChange = {})
+                        }
+
+                        is UserUIState.Loading -> {
+                            CircularProgressIndicator()
+                        }
+
+                        is UserUIState.Error -> {
+                            Text("Error Loading User Details")
+                        }
+
+                        is UserUIState.Success -> {
+                            UserCard(
+                                user = state.user,
+                                onNameChange = { newName ->
+                                    viewModel.updateUsername(newName)
+                                }
+                            )
+                        }
                     }
-                )
-            }
-        }
 
-        HorizontalDivider()
+                    HorizontalDivider()
 
-        when (val state = userPosts.value) {
-            is PostDetailsUIState.Loading -> {
-                CircularProgressIndicator()
-            }
-            is PostDetailsUIState.Error -> {
-                Text("Error Loading posts for user with ${state.msg}")
-                Log.d("ERROR_TEXT", state.msg)
-            }
-            is PostDetailsUIState.Success -> {
-                LazyColumn {
-                    items(state.posts) {
-                        UserReviewCard(it.post, { id -> viewModel.getAlbumData(id) }, toDetailsScreen)
+                    when (val state = userPosts.value) {
+                        is PostDetailsUIState.Loading -> {
+                            CircularProgressIndicator()
+                        }
+
+                        is PostDetailsUIState.Error -> {
+                            Text("Error Loading posts for user with ${state.msg}")
+                            Log.d("ERROR_TEXT", state.msg)
+                        }
+
+                        is PostDetailsUIState.Success -> {
+                            LazyColumn {
+                                items(state.posts) {
+                                    UserReviewCard(
+                                        it.post,
+                                        { id -> viewModel.getAlbumData(id) },
+                                        toDetailsScreen
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
+    })
 }
 
 @Composable
@@ -173,9 +202,9 @@ fun UserReviewCard (
     getAlbumData : (String) -> Flow<StoredAlbumData?>,
     toDetailsScreen: (String, String) -> Unit
 ) {
-    Card (
+    Card(
         modifier = Modifier.fillMaxWidth()
-    ){
+    ) {
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()
         )
@@ -186,19 +215,24 @@ fun UserReviewCard (
             AsyncImage(
                 albumData.value?.img_url,
                 "Album Cover",
-                modifier = Modifier.placeholder(
-                    enabled = albumData.value == null,
-                )
+                modifier = Modifier
+                    .placeholder(
+                        enabled = albumData.value == null,
+                    )
                     .size(70.dp, 70.dp)
                     .padding(10.dp)
-                    .clickable{
-                        toDetailsScreen(albumData.value?.name ?: "throw error here i think", albumData.value?.artist ?: "but it has to be graaceful and not crash the whole app")
+                    .clickable {
+                        toDetailsScreen(
+                            albumData.value?.name ?: "throw error here i think",
+                            albumData.value?.artist
+                                ?: "but it has to be graaceful and not crash the whole app"
+                        )
                     }
             )
-            Column (
+            Column(
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.padding(10.dp)
-            ){
+            ) {
                 Row {
                     Text(albumData.value?.name ?: "")
                 }
@@ -208,5 +242,52 @@ fun UserReviewCard (
         }
 
 
+    }
+}
+/**
+ * Implements the "Press back again to exit" pattern using a Snackbar.
+ *
+ * @param snackbarHostState The state used to control the Snackbar's visibility.
+ * @param exitDelayMillis The time window (in milliseconds) for the second press.
+ * @param snackbarMessage The message to display in the Snackbar.
+ */
+@Composable
+fun DoubleBackPressExit(
+    snackbarHostState: SnackbarHostState,
+    exitDelayMillis: Long = 2000L,
+    snackbarMessage: String = "Press back again to exit"
+) {
+    // State to track if the back button has been pressed once
+    var backPressedOnce by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Handle the system back button press
+    BackHandler(enabled = true) {
+        if (backPressedOnce) {
+            // Second press within the time window: Exit the app/Activity
+            (context as? androidx.activity.ComponentActivity)?.finish()
+        } else {
+            // First press: Set the flag and show the Snackbar
+            backPressedOnce = true
+
+            // Show the Snackbar
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = snackbarMessage,
+                    duration = SnackbarDuration.Short
+                )
+                // We don't necessarily need to check the result,
+                // but we launch a separate coroutine to reset the flag
+                // after the delay, regardless of the Snackbar's status.
+            }
+
+            // Start a coroutine to reset the flag after the delay
+            coroutineScope.launch {
+                delay(exitDelayMillis)
+                backPressedOnce = false
+            }
+        }
     }
 }
