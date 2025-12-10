@@ -85,7 +85,6 @@ class ReviewViewModel : ViewModel() {
                         Log.d("CREATE_REVIEW", "DocumentSnapshot data: ${document.data}")
                         docRef.update("reviewUids",
                             FieldValue.arrayUnion(auth.uid!!)
-
                             )
                         postReview(postToUpload)
                     }
