@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -22,6 +24,7 @@ import hu.bme.ait.sean.nav.LoginScreenRoute
 import hu.bme.ait.sean.nav.ReviewScreenRoute
 import hu.bme.ait.sean.nav.SearchScreenRoute
 import hu.bme.ait.sean.nav.UserScreenRoute
+import hu.bme.ait.sean.ui.AppBottomBar
 import hu.bme.ait.sean.ui.screen.album.DetailScreen
 import hu.bme.ait.sean.ui.screen.login.LoginScreen
 import hu.bme.ait.sean.ui.screen.review.ReviewScreen
@@ -36,8 +39,30 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SeanTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    NavGraph(Modifier.padding(innerPadding))
+                // backstack here so can be passedto navgraph and seen by bottombar
+                val backStack = rememberNavBackStack(LoginScreenRoute)
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        // hide bottom bar on login
+                        val current = backStack.lastOrNull()
+                        if (current !is LoginScreenRoute) {
+                            AppBottomBar(
+                                currentRoute = current,
+                                onNavigate = { route ->
+                                    if (backStack.lastOrNull() != route) { //avoid double stacking which is what i do erryday
+                                        backStack.add(route)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                ) { innerPadding ->
+                    NavGraph(
+                        modifier = Modifier.padding(innerPadding),
+                        backStack = backStack
+                    )
                 }
             }
         }
@@ -45,36 +70,38 @@ class MainActivity : ComponentActivity() {
 }
 
 
-@Composable
-fun NavGraph(modifier: Modifier) {
-    val backStack = rememberNavBackStack(LoginScreenRoute) //LoginScreenRoute)
 
+@Composable
+fun NavGraph(
+    modifier: Modifier,
+    backStack: NavBackStack<NavKey> //tspmo bruh
+) {
     NavDisplay(
         modifier = modifier,
         backStack = backStack,
-        onBack = {backStack.removeLastOrNull()},
+        onBack = { backStack.removeLastOrNull() },
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
         entryProvider  = entryProvider {
-            entry<LoginScreenRoute>{
+            entry<LoginScreenRoute> {
                 LoginScreen(
                     onLoginSuccess = {
-                        backStack.add(UserScreenRoute) // for testing for now
+                        backStack.add(UserScreenRoute) // go to user after login
                     }
                 )
             }
-            entry<UserScreenRoute>{
+            entry<UserScreenRoute> {
                 UserScreen { album, artist ->
                     backStack.add(DetailScreenRoute(album, artist))
                 }
             }
             entry<HomeScreenRoute> {
-//                /**/HomeScreen()
+                // HomeScreen()
             }
-            entry<SearchScreenRoute>{
-                SearchScreen{ album, artist ->
+            entry<SearchScreenRoute> {
+                SearchScreen { album, artist ->
                     backStack.add(DetailScreenRoute(album, artist))
                 }
             }
