@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.core.net.toUri
 import com.google.ai.client.generativeai.type.content
+import com.google.firebase.firestore.Query
 import hu.bme.ait.sean.data.StoredAlbumData
 import hu.bme.ait.sean.data.StoredAlbumDataID
 import hu.bme.ait.sean.data.User
@@ -74,7 +75,9 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             viewModelScope.launch {
                 val res = api.getAlbumInfo(album, artist)
                 albumDetailsUIState = AlbumDetailsUIState.Success(res)
-                getStoredAlbumData(res.album!!.mbid ?: "${res.album!!.name} - ${res.album!!.artist}")
+                val id = (res.album!!.mbid ?: "").ifEmpty { "${res.album!!.name} - ${res.album!!.artist}" }
+                Log.d("GET_ALBUM", id)
+                getStoredAlbumData(id)
             }
         } catch (e: Exception) {
             albumDetailsUIState = AlbumDetailsUIState.Error(e.message!!)
@@ -135,7 +138,7 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
         val success = storedAlbumData!!
 
         val snapshotListener = Firebase.firestore.collection(REVIEW_COLLECTION)
-            .orderBy("postDate")
+            .orderBy("postDate", Query.Direction.DESCENDING)
             .whereEqualTo("uid", uid)
             .whereEqualTo(
                 "albumID",

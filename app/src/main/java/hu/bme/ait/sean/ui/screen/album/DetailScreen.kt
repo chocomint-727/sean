@@ -11,7 +11,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideIn
@@ -93,7 +95,9 @@ import hu.bme.ait.sean.data.AlbumResponse.Album
 import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.theme.Primary
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.exp
 import kotlin.math.max
 
 fun ignoreCaseOpt(ignoreCase: Boolean) =
@@ -107,12 +111,15 @@ fun String?.indexesOf(pat: String, ignoreCase: Boolean = true): List<Int> =
 
 fun Modifier.realOffset(y: Dp) = layout { measurable, constraints ->
     val yPx = y.roundToPx()
-    val newConst = constraints.copy(maxHeight = constraints.maxHeight - yPx, minHeight = constraints.minHeight - yPx)
+    val newConst = constraints.copy(
+        maxHeight = constraints.maxHeight - yPx,
+        minHeight = constraints.minHeight - yPx
+    )
     val placeable = measurable.measure(newConst)
 
     // expand layout to allow upward movement
     layout(placeable.width, placeable.height) {
-        placeable.place(0, yPx/2)
+        placeable.place(0, yPx / 2)
     }
 }
 
@@ -234,7 +241,12 @@ fun DetailScreen(
 
                         Button(
                             {
-                                goToReviewScreen(details.mbid!!, details.name!!, details.artist!!, details.image?.last()?.text ?: "")
+                                goToReviewScreen(
+                                    details.mbid!!,
+                                    details.name!!,
+                                    details.artist!!,
+                                    details.image?.last()?.text ?: ""
+                                )
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Primary
@@ -363,12 +375,12 @@ fun DetailScreen(
 
 @Composable
 fun ReviewCard(
-    uid : String,
-    uidPostsFlowFunction : (String) -> Flow<PostDetailsUIState>,
-    userDataFlowFunction : (String) -> Flow<User?>
+    uid: String,
+    uidPostsFlowFunction: (String) -> Flow<PostDetailsUIState>,
+    userDataFlowFunction: (String) -> Flow<User?>
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var userData = userDataFlowFunction(uid).collectAsState(
+    val userData = userDataFlowFunction(uid).collectAsState(
         User()
     )
     val postListState = uidPostsFlowFunction(uid).collectAsState(
@@ -392,21 +404,40 @@ fun ReviewCard(
             )
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
+
+            AnimatedVisibility(
+                visible = !expanded,
+                enter = expandHorizontally (
+                    expandFrom = Alignment.Start,
+                    animationSpec = tween(delayMillis = 300, durationMillis = 300, easing = EaseInOut)
+                ),
+                exit = shrinkHorizontally(
+                    shrinkTowards = Alignment.Start,
+                    animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                )
             ) {
-                AsyncImage(
-                    userData.value!!.pfpURL,
-                    contentDescription = "Profile",
+                Column(
                     modifier = Modifier
-                        .size(75.dp, 75.dp))// profile pic
-                Text(userData.value!!.name, fontSize = 12.sp, maxLines = if (!expanded) 1 else Int.MAX_VALUE, overflow = TextOverflow.Ellipsis)
+                        .padding(10.dp)
+                        .weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AsyncImage(
+                        userData.value!!.pfpURL,
+                        contentDescription = "Profile",
+                        modifier = Modifier
+                            .size(40.dp, 40.dp)
+                    )// profile pic
+                    Text(
+                        userData.value!!.name,
+                        fontSize = 12.sp,
+                        maxLines = if (!expanded) 1 else Int.MAX_VALUE,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
 
             Column(
@@ -415,13 +446,47 @@ fun ReviewCard(
                     .weight(6f)
             ) {
 
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = expandVertically (
+                        expandFrom = Alignment.Bottom,
+                        animationSpec = tween(delayMillis = 300, durationMillis = 300, easing = EaseInOut)
+                    ),
+                    exit = shrinkVertically(
+                        shrinkTowards = Alignment.Bottom,
+                        animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            userData.value!!.pfpURL,
+                            contentDescription = "Profile",
+                            modifier = Modifier
+                                .size(40.dp, 40.dp)
+                        )// profile pic
+                        Text(
+                            userData.value!!.name,
+                            fontSize = 12.sp,
+                            maxLines = if (!expanded) 1 else Int.MAX_VALUE,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
                 when (val postState = postListState.value) {
                     is PostDetailsUIState.Loading -> {
                         CircularProgressIndicator()
                     }
+
                     is PostDetailsUIState.Error -> {
                         Text(postState.msg)
                     }
+
                     is PostDetailsUIState.Success -> {
                         val post = postState.posts[0].post
                         Column {
@@ -437,11 +502,19 @@ fun ReviewCard(
                                 Spacer(Modifier.weight(1f))
                                 Text(
                                     "%.1f".format(post.rating) + " / 5",
-                                    fontSize = 24.sp
+                                    fontSize = 14.sp
                                 )
                             }
 
-                            Text(post.postBody, fontSize = 16.sp, fontWeight = FontWeight.W300)
+                            Spacer(Modifier.height(8.dp))
+
+                            Text(
+                                post.postBody,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W300,
+                                maxLines = if (expanded) Int.MAX_VALUE else 4,
+                                overflow = TextOverflow.Ellipsis
+                            )
 
                         }
 
@@ -449,29 +522,30 @@ fun ReviewCard(
 
                             Column {
                                 postState.posts.drop(1).forEach {
-                                Column {
-                                    Row(
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        for (i in 1..5) {
-                                            Icon(
-                                                if (it.post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
-                                                contentDescription = "star"
+                                    HorizontalDivider(Modifier.padding(12.dp))
+                                    Column {
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            for (i in 1..5) {
+                                                Icon(
+                                                    if (it.post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
+                                                    contentDescription = "star"
+                                                )
+                                            }
+                                            Spacer(Modifier.weight(1f))
+                                            Text(
+                                                "%.1f".format(it.post.rating) + " / 5",
+                                                fontSize = 14.sp
                                             )
                                         }
-                                        Spacer(Modifier.weight(1f))
+
                                         Text(
-                                            "%.1f".format(it.post.rating) + " / 5",
-                                            fontSize = 24.sp
+                                            it.post.postBody,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.W300
                                         )
                                     }
-
-                                    Text(
-                                        it.post.postBody,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.W300
-                                    )
-                                }
                                 }
                             }
                         }

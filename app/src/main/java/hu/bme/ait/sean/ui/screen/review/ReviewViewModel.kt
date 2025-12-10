@@ -6,6 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.BlockThreshold
+import com.google.ai.client.generativeai.type.HarmCategory
+import com.google.ai.client.generativeai.type.SafetySetting
+import com.google.ai.client.generativeai.type.content
+import com.google.ai.client.generativeai.type.generationConfig
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -17,6 +23,8 @@ import hu.bme.ait.sean.data.StoredAlbumData
 import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.DetailViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.text.ifEmpty
 
@@ -44,6 +52,44 @@ class ReviewViewModel : ViewModel() {
             .addOnFailureListener {
                 user = User()
             }
+    }
+
+    private val genModel = GenerativeModel(
+        modelName = "gemini-2.5-flash",
+        apiKey = "AIzaSyCPrDSrGumU72y7-siNJ5WtnkNPVwkFCWA",
+
+        generationConfig = generationConfig {
+            temperature = 0.5f
+        },
+
+        safetySettings = listOf(
+            SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.NONE),
+            SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.NONE),
+            SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.NONE),
+            SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.NONE)
+        )
+    )
+
+    private val _textGenerationResult = MutableStateFlow<String?>(null)
+    val textGenerationResult = _textGenerationResult.asStateFlow()
+
+    fun generateContent(prompt: String = "Tell me the current time") {
+        _textGenerationResult.value = "Generating..."
+        viewModelScope.launch {
+            try {
+                val inputContent = content {
+                    text (prompt)
+                }
+                var fullResponse = ""
+                val aiResult = genModel.generateContentStream(inputContent).collect {
+                        chunk ->
+                    fullResponse += chunk.text
+                    _textGenerationResult.value = fullResponse
+                }
+            } catch (e: Exception) {
+                _textGenerationResult.value = "Error: ${e.message}"
+            }
+        }
     }
 
     fun pushReview(
