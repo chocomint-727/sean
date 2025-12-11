@@ -183,5 +183,4 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             Toast.makeText(ctx, e.localizedMessage?:"", Toast.LENGTH_SHORT).show()
         }
     }
-
 }
