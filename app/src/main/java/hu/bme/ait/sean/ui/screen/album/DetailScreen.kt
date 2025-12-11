@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -430,11 +432,14 @@ fun ReviewCard(
                                         )
                                 )
 
+                                Spacer(Modifier.padding(3.dp))
+
                                 Text(
                                     userData.value!!.name,
                                     fontSize = 12.sp,
                                     maxLines = if (!expanded) 1 else Int.MAX_VALUE,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.widthIn(max = 40.dp)
                                 )
                             }
                         }
@@ -480,6 +485,9 @@ fun ReviewCard(
                                                 highlight = PlaceholderDefaults.fade
                                             )
                                     )// profile pic
+
+                                    Spacer(Modifier.padding(3.dp))
+
                                     Text(
                                         userData.value!!.name,
                                         fontSize = 12.sp,
