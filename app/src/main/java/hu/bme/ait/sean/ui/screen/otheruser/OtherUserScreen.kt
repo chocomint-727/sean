@@ -31,6 +31,7 @@ import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import hu.bme.ait.sean.ui.theme.Primary
 
@@ -41,71 +42,62 @@ fun OtherUserScreen(
     uid: String,
     toDetailsScreen : (String, String) -> Unit,
 ) {
-    val userPosts = viewModel.loadReviewsForUser().collectAsState(
-        initial = OtherUserUIState.Init
+    val userPosts = viewModel.loadReviewsForUser(uid).collectAsState(
+        Post()
     )
+
     val user = viewModel.getUser(uid).collectAsState(User()).value
+
 
     Column(
         modifier = Modifier
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when (val state = viewModel.otherUserUIState) {
-            is OtherUserUIState.Init -> {
+        if (user == null) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(180.dp),
+                color = Primary
+            )
+        }
+        else {
+            Column {
                 OtherUserCard(
-                    user = User()
+                    user = user
                 )
-            }
+                Spacer(modifier = Modifier.padding(2.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.padding(2.dp))
 
-            is OtherUserUIState.Loading -> {
-                Spacer(Modifier.size(300.dp))
-                CircularProgressIndicator(
-                    modifier = Modifier.size(180.dp),
-                    color = Primary
-                )
-            }
+                when (val state = userPosts.value) {
+                    is PostDetailsUIState.Loading -> {
+                        CircularProgressIndicator(
+                            color = Primary
+                        )
+                    }
 
-            is OtherUserUIState.Error -> {
-                Text("Error Loading User Details")
-            }
+                    is PostDetailsUIState.Error -> {
+                        Text("Error Loading posts for user with ${state.msg}")
+                        Log.d("ERROR_TEXT", state.msg)
+                    }
 
-            is OtherUserUIState.Success -> {
-                Column {
-                    OtherUserCard(
-                        user = user
-                    )
-                    Spacer(modifier = Modifier.padding(2.dp))
-                    HorizontalDivider()
-                    Spacer(modifier = Modifier.padding(2.dp))
-
-                    when (val state = userPosts.value) {
-                        is PostDetailsUIState.Loading -> {
-                            CircularProgressIndicator()
-                        }
-
-                        is PostDetailsUIState.Error -> {
-                            Text("Error Loading posts for user with ${state.msg}")
-                            Log.d("ERROR_TEXT", state.msg)
-                        }
-
-                        is PostDetailsUIState.Success -> {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                items(state.posts) {
-                                    UserReviewCard(
-                                        it.post,
-                                        { id -> viewModel.getAlbumData(id) },
-                                        toDetailsScreen
-                                    )
-                                }
+                    is PostDetailsUIState.Success -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(state.posts) {
+                                UserReviewCard(
+                                    it.post,
+                                    { id -> viewModel.getAlbumData(id) },
+                                    toDetailsScreen
+                                )
                             }
                         }
                     }
                 }
             }
         }
+
     }
 }
 

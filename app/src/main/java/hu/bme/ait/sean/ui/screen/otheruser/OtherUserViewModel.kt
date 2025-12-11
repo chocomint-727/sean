@@ -20,33 +20,19 @@ import hu.bme.ait.sean.ui.screen.user.UserUIState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 
-sealed interface OtherUserUIState {
-    object Init : OtherUserUIState
-    object Loading : OtherUserUIState
-    data class Success (val user : User) : OtherUserUIState
-    data class Error (val msg : String) : OtherUserUIState
-}
 
 class OtherUserViewModel : ViewModel() {
-    var otherUserUIState : OtherUserUIState by mutableStateOf(OtherUserUIState.Init)
     private lateinit var auth : FirebaseAuth
 
     private val usersCollection = Firebase.firestore.collection("users")
 
-    init {
-        otherUserUIState = OtherUserUIState.Loading
-        auth = Firebase.auth
+    private val placeholderUser = User()
 
+    init {
+        auth = Firebase.auth
     }
 
     fun getUser(uid: String) = callbackFlow {
-        val success = otherUserUIState as? OtherUserUIState.Success
-        if (success == null){
-            trySend(User())
-            close()
-            return@callbackFlow
-        }
-
         val user = Firebase.firestore.collection("users").document(uid)
         user.get()
             .addOnSuccessListener { documentSnapshot ->
@@ -66,16 +52,9 @@ class OtherUserViewModel : ViewModel() {
             return@awaitClose
         }
     }
-    fun loadReviewsForUser() = callbackFlow {
-        val success = otherUserUIState as? OtherUserUIState.Success
-        if (success == null){
-            trySend(PostDetailsUIState.Loading)
-            close()
-            return@callbackFlow
-        }
-
+    fun loadReviewsForUser(uid: String) = callbackFlow {
         val snapshotListener = Firebase.firestore.collection("reviews")
-            .whereEqualTo("uid", auth.uid!!)
+            .whereEqualTo("uid", uid)
             .orderBy("postDate")
             .addSnapshotListener { snapshot, e ->
                 val res = if (snapshot != null) {
@@ -93,7 +72,7 @@ class OtherUserViewModel : ViewModel() {
 
                     PostDetailsUIState.Success(postListWithIDs)
                 } else {
-                    PostDetailsUIState.Error((e?.localizedMessage ?: "") + " for user ${success.user}")
+                    PostDetailsUIState.Error((e?.localizedMessage ?: "") + " for user ${placeholderUser}")
                 }
                 trySend(res)
             }
@@ -103,13 +82,6 @@ class OtherUserViewModel : ViewModel() {
     }
 
     fun getAlbumData(id : String) = callbackFlow {
-        val success = otherUserUIState as? OtherUserUIState.Success
-        if (success == null){
-            trySend(StoredAlbumData())
-            close()
-            return@callbackFlow
-        }
-
         val doc = Firebase.firestore.collection("albums").document(id)
         doc.get()
             .addOnSuccessListener { documentSnapshot ->

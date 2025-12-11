@@ -2,6 +2,7 @@ package hu.bme.ait.sean.ui.screen.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,11 +19,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -52,6 +57,8 @@ fun LoginScreen(
     var showPassword by rememberSaveable { mutableStateOf(false) }
     var email by rememberSaveable { mutableStateOf("sean@gimble.com") }
     var password by rememberSaveable { mutableStateOf("password") }
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -161,19 +168,24 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when (viewModel.loginUiState) {
-                is LoginUiState.Error -> {
-                    Text("Error: {${(viewModel.loginUiState as LoginUiState.Error).errorMessage}}")
+                is LoginUiState.Error -> Snackbar {
+                        Text("Error: {${(viewModel.loginUiState as LoginUiState.Error).errorMessage}}")
                 }
+
                 LoginUiState.Init -> {}
+
                 LoginUiState.Loading -> {
-                        Spacer(Modifier.size(40.dp))
-                        CircularProgressIndicator(
+                    Spacer(Modifier.size(40.dp))
+                    CircularProgressIndicator(
                         modifier = Modifier.size(80.dp),
                         color = Primary
                     )
                 }
-                LoginUiState.LoginSuccess -> Text("Success!")
-                LoginUiState.RegisterSuccess -> Text("User Registered!")
+
+                LoginUiState.LoginSuccess -> {}
+                LoginUiState.RegisterSuccess -> Snackbar {
+                    Text("User registered Successfully! Log in!")
+                }
             }
         }
     }

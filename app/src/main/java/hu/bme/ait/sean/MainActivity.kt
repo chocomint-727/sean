@@ -1,6 +1,7 @@
 package hu.bme.ait.sean
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -131,6 +132,7 @@ fun NavGraph(
                     }
                 ) { uid ->
                     backStack.add(OtherUserScreenRoute(uid))
+                    Log.d("MAIN_ACTIVITY", "PASSED IG")
                 }
             }
             entry<ReviewScreenRoute> { (albumID, album, artist, img_url) ->

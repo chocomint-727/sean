@@ -45,6 +45,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,6 +53,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import com.revenuecat.placeholder.PlaceholderDefaults
+import hu.bme.ait.sean.ui.theme.Background2
+import hu.bme.ait.sean.ui.theme.Background3
 import hu.bme.ait.sean.ui.theme.Primary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -99,7 +102,9 @@ fun UserScreen(
             }
 
             is UserUIState.Success -> {
-                Column {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     UserCard(
                         user = state.user,
                         onBioChange = { newName, newBio ->
@@ -126,15 +131,25 @@ fun UserScreen(
                         }
 
                         is PostDetailsUIState.Success -> {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                items(state.posts) {
-                                    UserReviewCard(
-                                        it.post,
-                                        { id -> viewModel.getAlbumData(id) },
-                                        toDetailsScreen
-                                    )
+                            if (state.posts.isEmpty()) {
+                                Column {
+                                 Text("Review an Album to get started!")
+                                }
+                            }
+                            else {
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    items(state.posts) {
+                                        UserReviewCard(
+                                            it.post,
+                                            { id -> viewModel.getAlbumData(id) },
+                                            toDetailsScreen,
+                                            {
+                                                TODO("delete ts posts")
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -157,7 +172,10 @@ fun UserCard(
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
         modifier = Modifier.fillMaxWidth(),
-        shape = RectangleShape
+        shape = RectangleShape,
+        colors = CardDefaults.cardColors(
+            containerColor = Background3
+        )
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically
@@ -166,11 +184,13 @@ fun UserCard(
                 user.pfpURL,
                 contentDescription = "",
 
-                modifier = Modifier.size(100.dp, 100.dp).placeholder(
-                    enabled = user.pfpURL.isEmpty(),
-                    shape = CircleShape,
-                    highlight = PlaceholderDefaults.shimmer
-                )
+                modifier = Modifier
+                    .size(100.dp, 100.dp)
+                    .placeholder(
+                        enabled = user.pfpURL.isEmpty(),
+                        shape = CircleShape,
+                        highlight = PlaceholderDefaults.fade
+                    )
             )
             Column (
                 horizontalAlignment = Alignment.Start,
@@ -210,6 +230,15 @@ fun UserCard(
                                 ) {
                                     TextButton(
                                         onClick = {
+                                            nameText = user.name
+                                            bioText = user.bio
+                                            isEditing = false
+                                        }
+                                    ) {
+                                        Text("Cancel")
+                                    }
+                                    TextButton(
+                                        onClick = {
                                             if (nameText.isNotEmpty()) {
                                                 onBioChange(nameText, bioText)
                                                 isEditing = false
@@ -217,15 +246,6 @@ fun UserCard(
                                         }
                                     ) {
                                         Text("Save")
-                                    }
-                                    TextButton(
-                                        onClick = {
-                                            nameText = user.name
-                                            bioText = user.bio
-                                            isEditing = false
-                                        }
-                                    ) {
-                                        Text("Cancel")
                                     }
                                 }
                             }
@@ -253,10 +273,14 @@ fun UserCard(
 fun UserReviewCard (
     post : Post,
     getAlbumData : (String) -> Flow<StoredAlbumData?>,
-    toDetailsScreen: (String, String) -> Unit
+    toDetailsScreen: (String, String) -> Unit,
+    onDelete: (String) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Background2
+        )
     ) {
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()
@@ -287,6 +311,12 @@ fun UserReviewCard (
                     Text(albumData.value?.name ?: "")
                 }
                 Text(post.postBody)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(
+                onClick = { onDelete }
+            ) {
+                Icon(Icons.Default.Delete, "Delete Review?")
             }
 
         }
