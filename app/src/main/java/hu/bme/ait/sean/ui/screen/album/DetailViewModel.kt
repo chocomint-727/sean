@@ -185,5 +185,4 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
             Toast.makeText(ctx, "No music app could be found.", Toast.LENGTH_SHORT).show()
         }
     }
-
 }
