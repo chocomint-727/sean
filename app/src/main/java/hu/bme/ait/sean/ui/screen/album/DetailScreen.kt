@@ -1,6 +1,7 @@
 package hu.bme.ait.sean.ui.screen.album
 
 import android.util.Log
+import android.widget.ImageButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseIn
@@ -171,8 +172,10 @@ fun DetailScreen(
         ) {
             when (viewModel.albumDetailsUIState) {
                 is AlbumDetailsUIState.Loading -> {
-                    CircularProgressIndicator()
-                    Text("idk loading or smth")
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(180.dp),
+                        color = Primary
+                    )
                 }
 
                 is AlbumDetailsUIState.Error -> {
@@ -430,7 +433,7 @@ fun ReviewCard(
                         contentDescription = "Profile",
                         modifier = Modifier
                             .size(40.dp, 40.dp)
-                    )// profile pic
+                    )
                     Text(
                         userData.value!!.name,
                         fontSize = 12.sp,

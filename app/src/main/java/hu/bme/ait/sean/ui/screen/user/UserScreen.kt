@@ -42,7 +42,6 @@ import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -50,10 +49,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import hu.bme.ait.sean.ui.theme.Primary
 import kotlinx.coroutines.delay
@@ -72,6 +67,7 @@ fun UserScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     DoubleBackPressExit(snackbarHostState)
+
     Column(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -304,33 +300,29 @@ fun DoubleBackPressExit(
     val coroutineScope = rememberCoroutineScope()
 
     // Handle the system back button press
-    Box(
-        modifier = Modifier.size(0.dp)
-    ) {
-        BackHandler(enabled = true) {
-            if (backPressedOnce) {
-                // Second press within the time window: Exit the app/Activity
-                (context as? ComponentActivity)?.finish()
-            } else {
-                // First press: Set the flag and show the Snackbar
-                backPressedOnce = true
+    BackHandler(enabled = true) {
+        if (backPressedOnce) {
+            // Second press within the time window: Exit the app/Activity
+            (context as? ComponentActivity)?.finish()
+        } else {
+            // First press: Set the flag and show the Snackbar
+            backPressedOnce = true
 
-                // Show the Snackbar
-                coroutineScope.launch {
-                    val result = snackbarHostState.showSnackbar(
-                        message = snackbarMessage,
-                        duration = SnackbarDuration.Short
-                    )
-                    // We don't necessarily need to check the result,
-                    // but we launch a separate coroutine to reset the flag
-                    // after the delay, regardless of the Snackbar's status.
-                }
+            // Show the Snackbar
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = snackbarMessage,
+                    duration = SnackbarDuration.Short
+                )
+                // We don't necessarily need to check the result,
+                // but we launch a separate coroutine to reset the flag
+                // after the delay, regardless of the Snackbar's status.
+            }
 
-                // Start a coroutine to reset the flag after the delay
-                coroutineScope.launch {
-                    delay(exitDelayMillis)
-                    backPressedOnce = false
-                }
+            // Start a coroutine to reset the flag after the delay
+            coroutineScope.launch {
+                delay(exitDelayMillis)
+                backPressedOnce = false
             }
         }
     }
