@@ -362,6 +362,9 @@ fun DetailScreen(
                             },
                             {
                                 viewModel.getUserData(it)
+                            },
+                            goToUserScreen = {
+                                goToUserScreen(it)
                             }
                         )
                     }
@@ -375,7 +378,8 @@ fun DetailScreen(
 fun ReviewCard(
     uid: String,
     uidPostsFlowFunction: (String) -> Flow<PostDetailsUIState>,
-    userDataFlowFunction: (String) -> Flow<User?>
+    userDataFlowFunction: (String) -> Flow<User?>,
+    GoToUserScreen: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val userData = userDataFlowFunction(uid).collectAsState(
@@ -418,7 +422,7 @@ fun ReviewCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        onClick = { }
+                        onClick = { GoToUserScreen(uid) }
                     ) {
                         AsyncImage(
                             userData.value!!.pfpURL,
