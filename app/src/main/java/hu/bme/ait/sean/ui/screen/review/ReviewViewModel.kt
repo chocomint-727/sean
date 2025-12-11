@@ -12,6 +12,7 @@ import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
+import com.google.firebase.BuildConfig
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -56,7 +57,7 @@ class ReviewViewModel : ViewModel() {
 
     private val genModel = GenerativeModel(
         modelName = "gemini-2.5-flash",
-        apiKey = "AIzaSyCPrDSrGumU72y7-siNJ5WtnkNPVwkFCWA",
+        apiKey = hu.bme.ait.sean.BuildConfig.GEMINI_API_KEY,
 
         generationConfig = generationConfig {
             temperature = 0.5f
