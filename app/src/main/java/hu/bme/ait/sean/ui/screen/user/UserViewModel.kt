@@ -28,7 +28,6 @@ class UserViewModel : ViewModel() {
 
     var userUIState : UserUIState by mutableStateOf(UserUIState.Init)
     private lateinit var auth : FirebaseAuth
-
     private val usersCollection = Firebase.firestore.collection("users")
 
     init {
@@ -112,8 +111,6 @@ class UserViewModel : ViewModel() {
         val firebaseUser = auth.currentUser ?: return
         val uid = firebaseUser.uid
 
-        userUIState = UserUIState.Loading
-
         usersCollection.document(uid)
             .update("name", newName)
             .addOnSuccessListener {
@@ -131,12 +128,12 @@ class UserViewModel : ViewModel() {
         val firebaseUser = auth.currentUser ?: return
         val uid = firebaseUser.uid
 
-        userUIState = UserUIState.Loading
+        Log.d("NEW_BIO", "new bio: $newBio")
 
         usersCollection.document(uid)
             .update("bio", newBio)
             .addOnSuccessListener {
-                val updatedUser = currentUserState.user.copy(name = newBio)
+                val updatedUser = currentUserState.user.copy(bio = newBio)
                 userUIState = UserUIState.Success(updatedUser)
             }
             .addOnFailureListener { e ->
