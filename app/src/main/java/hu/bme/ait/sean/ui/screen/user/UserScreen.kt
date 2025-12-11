@@ -49,13 +49,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import com.revenuecat.placeholder.PlaceholderDefaults
 import hu.bme.ait.sean.data.PostID
-import hu.bme.ait.sean.ui.theme.Background2
-import hu.bme.ait.sean.ui.theme.Background3
 import hu.bme.ait.sean.ui.theme.Primary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -327,7 +324,7 @@ fun UserReviewCard(
                 modifier = Modifier.padding(top = 10.dp),
                 onClick = onDelete
             ) {
-                Icon(Icons.Default.Delete, "Delete Review?")
+                Icon(Icons.Default.Delete, "Delete Review?", tint = Primary)
             }
         }
     }
