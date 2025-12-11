@@ -134,7 +134,8 @@ fun UserScreen(
                         is PostDetailsUIState.Success -> {
                             if (state.posts.isEmpty()) {
                                 Column {
-                                 Text("Review an Album to get started!")
+                                    Spacer(Modifier.size(80.dp))
+                                    Text("Review an Album to get started!")
                                 }
                             }
                             else {
@@ -172,11 +173,7 @@ fun UserCard(
     
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
-        modifier = Modifier.fillMaxWidth(),
-        shape = RectangleShape,
-        colors = CardDefaults.cardColors(
-            containerColor = Background3
-        )
+        modifier = Modifier.fillMaxWidth()
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically
@@ -184,7 +181,6 @@ fun UserCard(
             AsyncImage(
                 user.pfpURL,
                 contentDescription = "",
-
                 modifier = Modifier
                     .size(100.dp, 100.dp)
                     .placeholder(
@@ -238,6 +234,7 @@ fun UserCard(
                                     ) {
                                         Text("Cancel")
                                     }
+                                    Spacer(Modifier.weight(1f))
                                     TextButton(
                                         onClick = {
                                             if (nameText.isNotEmpty()) {
@@ -260,7 +257,8 @@ fun UserCard(
                     IconButton(onClick = {isEditing = true}) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = ""
+                            contentDescription = "",
+                            tint = Primary
                         )
                     }
                 }

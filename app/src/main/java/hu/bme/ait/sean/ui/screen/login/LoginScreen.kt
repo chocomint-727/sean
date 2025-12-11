@@ -64,13 +64,11 @@ fun LoginScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Background1),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.size(100.dp))
         Text(
-            //
             "SEAN",
             color = Primary,
             fontSize = 100.sp,
@@ -90,10 +88,6 @@ fun LoginScreen(
                 email = it
             },
             singleLine = true,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Background2,
-                unfocusedContainerColor = Background1
-            )
         )
         OutlinedTextField(
             modifier = Modifier
@@ -108,10 +102,6 @@ fun LoginScreen(
             singleLine = true,
             visualTransformation = if (showPassword) VisualTransformation.None
             else PasswordVisualTransformation(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Background2,
-                unfocusedContainerColor = Background1
-            ),
             trailingIcon = {
                 IconButton(onClick = {showPassword = !showPassword}) {
                     if (showPassword) {
