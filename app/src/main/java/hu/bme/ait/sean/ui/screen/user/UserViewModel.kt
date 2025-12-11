@@ -142,4 +142,16 @@ class UserViewModel : ViewModel() {
             }
     }
 
+    fun deleteReview(postId: String) {
+        Firebase.firestore.collection("reviews")
+            .document(postId)
+            .delete()
+            .addOnSuccessListener {
+                Log.d("DELETE_REVIEW", "Successfully deleted review $postId")
+            }
+            .addOnFailureListener { e ->
+                Log.e("DELETE_REVIEW", "Failed to delete review $postId", e)
+            }
+    }
+
 }

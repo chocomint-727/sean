@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import com.revenuecat.placeholder.PlaceholderDefaults
+import hu.bme.ait.sean.data.PostID
 import hu.bme.ait.sean.ui.theme.Background2
 import hu.bme.ait.sean.ui.theme.Background3
 import hu.bme.ait.sean.ui.theme.Primary
@@ -140,13 +141,13 @@ fun UserScreen(
                                 LazyColumn(
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    items(state.posts) {
+                                    items(state.posts) { postWithId: PostID ->
                                         UserReviewCard(
-                                            it.post,
-                                            { id -> viewModel.getAlbumData(id) },
-                                            toDetailsScreen,
-                                            {
-                                                TODO("delete ts posts")
+                                            post = postWithId.post,
+                                            getAlbumData = { id -> viewModel.getAlbumData(id) },
+                                            toDetailsScreen = toDetailsScreen,
+                                            onDelete = {
+                                                viewModel.deleteReview(postWithId.id)
                                             }
                                         )
                                     }
@@ -270,11 +271,11 @@ fun UserCard(
 }
 
 @Composable
-fun UserReviewCard (
-    post : Post,
-    getAlbumData : (String) -> Flow<StoredAlbumData?>,
+fun UserReviewCard(
+    post: Post,
+    getAlbumData: (String) -> Flow<StoredAlbumData?>,
     toDetailsScreen: (String, String) -> Unit,
-    onDelete: (String) -> Unit
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -285,7 +286,13 @@ fun UserReviewCard (
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()
         )
-        Row {
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 4.dp), // small right padding so icon isn't glued to edge
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AsyncImage(
                 albumData.value?.img_url,
                 "Album Cover",
@@ -303,26 +310,31 @@ fun UserReviewCard (
                         )
                     }
             )
+
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier
+                    .weight(1f)          // 🔑 constrain width so text wraps
+                    .padding(10.dp)
             ) {
                 Row {
                     Text(albumData.value?.name ?: "")
                 }
-                Text(post.postBody)
+                Text(
+                    text = post.postBody,
+                    // optional: limit lines so the card doesn’t get huge
+                    // maxLines = 5,
+                    // overflow = TextOverflow.Ellipsis
+                )
             }
-            Spacer(modifier = Modifier.weight(1f))
+
             IconButton(
                 modifier = Modifier.padding(top = 10.dp),
-                onClick = { onDelete }
+                onClick = onDelete
             ) {
                 Icon(Icons.Default.Delete, "Delete Review?")
             }
-
         }
-
-
     }
 }
 
