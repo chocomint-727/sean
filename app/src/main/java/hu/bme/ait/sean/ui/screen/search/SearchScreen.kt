@@ -32,6 +32,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
@@ -52,6 +53,10 @@ fun SearchScreen(
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    LaunchedEffect(Unit) {
+        viewModel.getRandomAlbum()
+    }
+
     Column (
         modifier = Modifier.padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -70,9 +75,10 @@ fun SearchScreen(
                 }
             },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-                .onFocusChanged(){ focus ->
-                    if (!focus.hasFocus && searchText.isNotEmpty()){
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged() { focus ->
+                    if (!focus.hasFocus && searchText.isNotEmpty()) {
                         viewModel.search(searchText)
                     }
                 },
@@ -98,14 +104,17 @@ fun SearchScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     AsyncImage(
-                        model = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRarPS_05NoojyN70zdA8VR9NgpeBSw8DwuZg&s",
+                        model = viewModel.randomAlbum.img_url.ifEmpty {  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRarPS_05NoojyN70zdA8VR9NgpeBSw8DwuZg&s"},
                         contentDescription = "",
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp)
+                            .clickable {
+                                navigateToDetailScreen(viewModel.randomAlbum.name.ifEmpty{"outstanding"}, viewModel.randomAlbum.artist.ifEmpty { "Boolymon" })
+                            }
                     )
-                    Text("Album of the Day:")
-                    Text("Boolymon - outstanding")
+                    Text("Sean Recommends:")
+                    Text("${viewModel.randomAlbum.artist.ifEmpty { "Boolymon" }} - ${viewModel.randomAlbum.name.ifEmpty{"outstanding"}}")
                 }
             }
             is SearchUIState.Loading -> {
@@ -163,9 +172,11 @@ fun AlbumSummaryCard (
     navigateToDetailScreen: (String, String) -> Unit
 ) {
     Card (
-        modifier = modifier.fillMaxWidth().clickable{
-            navigateToDetailScreen(album.name?:"slitherman", album.artist?:"RXK Nephew")
-        },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable {
+                navigateToDetailScreen(album.name ?: "slitherman", album.artist ?: "RXK Nephew")
+            },
         elevation = CardDefaults.elevatedCardElevation(2.dp)
     ){
         Row (
@@ -175,10 +186,15 @@ fun AlbumSummaryCard (
             AsyncImage(
                 album.image!!.last()!!.text,
                 contentDescription = "album cover",
-                modifier = Modifier.weight(2f).padding(5.dp).clip(RoundedCornerShape(8.dp))
+                modifier = Modifier
+                    .weight(2f)
+                    .padding(5.dp)
+                    .clip(RoundedCornerShape(8.dp))
             )
             Column(
-                modifier = Modifier.weight(8f).padding(10.dp)
+                modifier = Modifier
+                    .weight(8f)
+                    .padding(10.dp)
             ) {
                 Text(album.name?:"slitherman", fontSize = 20.sp, fontWeight = FontWeight.W400)
                 Text(album.artist?:"slitherman", fontSize = 12.sp, fontWeight = FontWeight.W300)

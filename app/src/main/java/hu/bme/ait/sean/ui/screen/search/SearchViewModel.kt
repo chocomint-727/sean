@@ -5,9 +5,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.BlockThreshold
+import com.google.ai.client.generativeai.type.HarmCategory
+import com.google.ai.client.generativeai.type.SafetySetting
+import com.google.ai.client.generativeai.type.content
+import com.google.ai.client.generativeai.type.generationConfig
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.ait.sean.data.SearchResponse.SearchResponse
+import hu.bme.ait.sean.data.StoredAlbumData
 import hu.bme.ait.sean.network.LastFMAPI
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +33,18 @@ sealed interface SearchUIState {
 @HiltViewModel
 class SearchViewModel @Inject constructor(val api : LastFMAPI) : ViewModel(){
     var searchUIState : SearchUIState by mutableStateOf(SearchUIState.Init)
+
+    var randomAlbum by mutableStateOf(StoredAlbumData())
+
+    fun getRandomAlbum() {
+        Firebase.firestore.collection("albums").get()
+            .addOnSuccessListener { res ->
+                val items = res.documents.map { doc -> doc.toObject(StoredAlbumData::class.java) }
+                if (items.isNotEmpty()){
+                    randomAlbum = items.random() ?: StoredAlbumData()
+                }
+            }
+    }
 
     fun search(query : String){
         viewModelScope.launch {
