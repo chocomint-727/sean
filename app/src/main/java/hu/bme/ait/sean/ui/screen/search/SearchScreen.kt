@@ -20,13 +20,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,13 +35,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import hu.bme.ait.sean.R
 import hu.bme.ait.sean.data.SearchResponse.SearchAlbum
-import kotlin.math.abs
+import hu.bme.ait.sean.ui.theme.Primary
 
 @Composable
 fun SearchScreen(
@@ -50,6 +50,7 @@ fun SearchScreen(
     navigateToDetailScreen : (String, String) -> Unit
 ){
     var searchText by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column (
         modifier = Modifier.padding(10.dp),
@@ -62,19 +63,29 @@ fun SearchScreen(
             trailingIcon = {
                 IconButton(
                     {
-                        viewModel.search(searchText)
+                        searchText = ""
                     }
                 ) {
-                    Icon(Icons.Filled.Search, "Search")
+                    Icon(Icons.Filled.Close, "Search")
                 }
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
-                .onFocusChanged(){focus ->
+                .onFocusChanged(){ focus ->
                     if (!focus.hasFocus && searchText.isNotEmpty()){
                         viewModel.search(searchText)
                     }
                 },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    viewModel.search(searchText)
+                    defaultKeyboardAction(ImeAction.Search)
+                    keyboardController?.hide()
+                }
+            )
         )
 
         HorizontalDivider(modifier = Modifier.padding(8.dp))
@@ -103,7 +114,10 @@ fun SearchScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(180.dp),
+                        color = Primary
+                    )
                 }
             }
             is SearchUIState.Success -> {
