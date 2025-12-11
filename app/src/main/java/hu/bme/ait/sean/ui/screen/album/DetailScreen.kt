@@ -132,6 +132,7 @@ fun DetailScreen(
     modifier: Modifier,
     viewModel: DetailViewModel = hiltViewModel(),
     goToReviewScreen: (String, String, String, String) -> Unit,
+    goToUserScreen: (String) -> Unit
 ) {
 
     val ctx = LocalContext.current
@@ -418,12 +419,17 @@ fun ReviewCard(
                         .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AsyncImage(
-                        userData.value!!.pfpURL,
-                        contentDescription = "Profile",
-                        modifier = Modifier
-                            .size(40.dp, 40.dp)
-                    )
+                    Button(
+                        onClick = { }
+                    ) {
+                        AsyncImage(
+                            userData.value!!.pfpURL,
+                            contentDescription = "Profile",
+                            modifier = Modifier
+                                .size(40.dp, 40.dp)
+                        )
+                    }
+
                     Text(
                         userData.value!!.name,
                         fontSize = 12.sp,

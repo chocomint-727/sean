@@ -38,11 +38,13 @@ import hu.bme.ait.sean.ui.theme.Primary
 @Composable
 fun OtherUserScreen(
     viewModel: OtherUserViewModel = viewModel(),
-    toDetailsScreen : (String, String) -> Unit
+    uid: String,
+    toDetailsScreen : (String, String) -> Unit,
 ) {
     val userPosts = viewModel.loadReviewsForUser().collectAsState(
         initial = OtherUserUIState.Init
     )
+    val user = viewModel.getUser(uid).collectAsState(User()).value
 
     Column(
         modifier = Modifier
@@ -71,7 +73,7 @@ fun OtherUserScreen(
             is OtherUserUIState.Success -> {
                 Column {
                     OtherUserCard(
-                        user = state.user
+                        user = user
                     )
                     Spacer(modifier = Modifier.padding(2.dp))
                     HorizontalDivider()
@@ -109,7 +111,7 @@ fun OtherUserScreen(
 
 @Composable
 fun OtherUserCard(
-    user: User
+    user: User?
 ) {
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
@@ -120,14 +122,14 @@ fun OtherUserCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                user.pfpURL,
+                user?.pfpURL,
                 contentDescription = ""
             )
             Column (
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(user.name, fontSize = 24.sp, modifier = Modifier.padding(10.dp))
-                Text(user.bio, fontSize = 16.sp, modifier = Modifier.padding(10.dp))
+                Text(user?.name ?: "User could not be loaded", fontSize = 24.sp, modifier = Modifier.padding(10.dp))
+                Text(user?.bio ?: "Bio could not be loaded", fontSize = 16.sp, modifier = Modifier.padding(10.dp))
             }
         }
     }

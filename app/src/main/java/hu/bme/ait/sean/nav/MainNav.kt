@@ -22,7 +22,9 @@ data class ReviewScreenRoute(
 data object SearchScreenRoute : NavKey
 
 @Serializable
-data object OtherUserScreenRoute: NavKey
+data class OtherUserScreenRoute(
+    val uid: String
+): NavKey
 
 @Serializable
 data class DetailScreenRoute(
