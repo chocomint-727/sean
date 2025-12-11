@@ -3,7 +3,6 @@ package hu.bme.ait.sean.ui.screen.user
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,20 +40,38 @@ import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.StarRate
+import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.Dialog
 import com.revenuecat.placeholder.PlaceholderDefaults
 import hu.bme.ait.sean.data.PostID
 import hu.bme.ait.sean.ui.theme.Primary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.exp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +89,8 @@ fun UserScreen(
 
     Column(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
         ) {
         when (val state = viewModel.userUIState) {
@@ -111,7 +128,7 @@ fun UserScreen(
                         }
                     )
 
-                    HorizontalDivider(Modifier.padding(3.dp))
+                    HorizontalDivider(Modifier.padding(10.dp))
 
 
                     when (val state = userPosts.value) {
@@ -167,10 +184,11 @@ fun UserCard(
     var isEditing by remember { mutableStateOf(false) }
     var nameText by rememberSaveable (user.name) { mutableStateOf(user.name) }
     var bioText by rememberSaveable (user.bio) { mutableStateOf(user.bio) }
-    
-    Card (
-        elevation = CardDefaults.elevatedCardElevation(10.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
+
+    Box (
+
+        modifier = Modifier
+            .fillMaxWidth()
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically
@@ -185,6 +203,8 @@ fun UserCard(
                         shape = CircleShape,
                         highlight = PlaceholderDefaults.fade
                     )
+                    .padding(10.dp)
+                    .clip(CircleShape)
             )
             Column (
                 horizontalAlignment = Alignment.Start,
@@ -250,7 +270,7 @@ fun UserCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(user.name, fontSize = 24.sp, modifier = Modifier.padding(10.dp))
+                    Text(user.name, fontSize = 24.sp, fontWeight = FontWeight.W600, modifier = Modifier.padding(10.dp))
                     IconButton(onClick = {isEditing = true}) {
                         Icon(
                             imageVector = Icons.Default.Edit,
@@ -272,8 +292,16 @@ fun UserReviewCard(
     toDetailsScreen: (String, String) -> Unit,
     onDelete: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                expanded = !expanded
+            }
+            .animateContentSize(
+                animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+            )
     ) {
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()
@@ -283,7 +311,7 @@ fun UserReviewCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(end = 4.dp), // small right padding so icon isn't glued to edge
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             AsyncImage(
                 albumData.value?.img_url,
@@ -309,14 +337,23 @@ fun UserReviewCard(
                     .weight(1f)          // 🔑 constrain width so text wraps
                     .padding(10.dp)
             ) {
-                Row {
-                    Text(albumData.value?.name ?: "")
+
+                Row (
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Text(albumData.value?.name ?: "", fontWeight = FontWeight.W600)
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "%.1f".format(post.rating) + " / 5",
+                        fontSize = 14.sp
+                    )
                 }
+                Spacer(Modifier.padding(8.dp))
                 Text(
                     text = post.postBody,
                     // optional: limit lines so the card doesn’t get huge
-                    // maxLines = 5,
-                    // overflow = TextOverflow.Ellipsis
+                    maxLines = if (!expanded) 5 else Int.MAX_VALUE,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
