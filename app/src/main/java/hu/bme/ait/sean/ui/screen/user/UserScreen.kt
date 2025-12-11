@@ -278,7 +278,7 @@ fun UserReviewCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Background2
+            containerColor = Background3
         )
     ) {
         val albumData = getAlbumData(post.albumID).collectAsState(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -51,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.revenuecat.placeholder.PlaceholderDefaults
+import com.revenuecat.placeholder.placeholder
 
 @Composable
 fun ReviewScreen(
@@ -75,14 +78,24 @@ fun ReviewScreen(
             Text("Review", fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
             HorizontalDivider(modifier = Modifier.padding(8.dp))
             Row {
-                AsyncImage(img_url, "", modifier = Modifier.padding(end = 10.dp).weight(4f))
+                AsyncImage(
+                    img_url, "",
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .weight(3f)
+                        .placeholder(
+                            enabled = img_url.isEmpty(),
+                            shape = CircleShape,
+                            highlight = PlaceholderDefaults.fade
+                        )
+                )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(6f)
+                    modifier = Modifier.weight(7f)
                 ) {
                     Text(
                         "$album - $artist",
-                        fontSize = 24.sp,
+                        fontSize = 32.sp,
                         modifier = Modifier.padding(vertical = 8.dp),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -118,7 +131,7 @@ fun ReviewScreen(
                 IconButton(
                     {
                         aiUsed = true
-                        viewModel.generateContent("You are a wise and traveled music critic. Your opinions on music are absolute. You may be a bit curt but never dismissive, but it comes from a desire to hear more music. Your research skills are unmatched, using information from every corner of the internet, like reddit. You love adding details about choice tracks that stand out to you. You are reviewing the album $album by $artist. You have rated it $stars / 5. Write your point of view on the album, keep it short and sweet")
+                        viewModel.generateContent("You are a wise and traveled music critic. Your opinions on music are absolute. You may be a bit curt but never dismissive, but it comes from a desire to hear more music. Your research skills are unmatched, using information from every corner of the internet, like reddit. You love adding details about choice tracks that stand out to you. You are reviewing the album $album by $artist. You have rated it $stars / 5. Write your point of view on the album, keep it short and sweet. Limit reviews to 5 sentences MAX.")
                     },
                     modifier = Modifier.weight(1f)
                 ) {
