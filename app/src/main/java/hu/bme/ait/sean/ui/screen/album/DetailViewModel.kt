@@ -1,6 +1,5 @@
 package hu.bme.ait.sean.ui.screen.album
 
-import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -9,28 +8,26 @@ import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.ait.sean.data.AlbumResponse.AlbumResponse
 import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.PostID
+import hu.bme.ait.sean.data.StoredAlbumData
+import hu.bme.ait.sean.data.StoredAlbumDataID
+import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.network.LastFMAPI
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.core.net.toUri
-import com.google.ai.client.generativeai.type.content
-import com.google.firebase.firestore.Query
-import hu.bme.ait.sean.data.StoredAlbumData
-import hu.bme.ait.sean.data.StoredAlbumDataID
-import hu.bme.ait.sean.data.User
-import hu.bme.ait.sean.ui.screen.user.UserUIState
 
 
 sealed interface AlbumDetailsUIState {
@@ -173,14 +170,31 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
     }
 
-    fun openInMusic(ctx : Context, song : String, album : String, artist : String){
-        val query = Uri.encode("$song $album $artist")
-        val url = "https://www.youtube.com/results?search_query=$query"
-        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-        try {
-            ctx.startActivity(intent)
-        } catch (e : Exception) {
-            Toast.makeText(ctx, e.localizedMessage?:"", Toast.LENGTH_SHORT).show()
+//    fun openInMusic(ctx : Context, song : String, album : String, artist : String){
+//        val query = Uri.encode("$song $album $artist")
+//        val url = "https://www.youtube.com/results?search_query=$query"
+//        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+//        try {
+//            ctx.startActivity(intent)
+//        } catch (e : Exception) {
+//            Toast.makeText(ctx, e.localizedMessage?:"", Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
+    fun openInMusic(context: Context, songName: String?) {
+        val uriString = "spotify:search:" + Uri.encode(songName)
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.setData(Uri.parse(uriString))
+        intent.setPackage("com.spotify.music")
+        if (intent.resolveActivity(context.getPackageManager()) != null) {
+            context.startActivity(intent)
+        } else {
+            // Optional: fallback to web search
+            val webIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://open.spotify.com/search/" + Uri.encode(songName))
+            )
+            context.startActivity(webIntent)
         }
     }
 }

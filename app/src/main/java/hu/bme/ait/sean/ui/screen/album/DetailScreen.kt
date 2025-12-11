@@ -293,8 +293,6 @@ fun DetailScreen(
                                                     viewModel.openInMusic(
                                                         ctx,
                                                         track?.name ?: "Block List",
-                                                        details.name ?: "Block List - Single",
-                                                        details.artist ?: "RXKNephew"
                                                     )
                                                 }
                                             ) {
