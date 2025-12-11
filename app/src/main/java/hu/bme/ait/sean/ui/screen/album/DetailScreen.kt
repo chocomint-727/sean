@@ -161,12 +161,6 @@ fun DetailScreen(
     ) {
         Column(
             modifier = Modifier
-                .animateContentSize(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy, // controls "elasticity"
-                        stiffness = Spring.StiffnessLow // lower = slower, more bounce
-                    )
-                )
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -394,12 +388,6 @@ fun ReviewCard(
         elevation = CardDefaults.cardElevation(10.dp),
         modifier = Modifier
             .padding(10.dp)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy, // controls "elasticity"
-                    stiffness = Spring.StiffnessLow // lower = slower, more bounce
-                )
-            )
             .clickable(
                 onClick = {
                     expanded = !expanded
@@ -521,7 +509,17 @@ fun ReviewCard(
 
                         }
 
-                        if (expanded) {
+                        AnimatedVisibility (
+                            expanded,
+                            enter = expandVertically (
+                                expandFrom = Alignment.Top,
+                                animationSpec = tween(delayMillis = 300, durationMillis = 300, easing = EaseInOut)
+                            ),
+                            exit = shrinkVertically(
+                                shrinkTowards = Alignment.Top,
+                                animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                            )
+                        ) {
 
                             Column {
                                 postState.posts.drop(1).forEach {

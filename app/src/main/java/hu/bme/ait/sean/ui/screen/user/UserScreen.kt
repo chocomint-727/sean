@@ -43,6 +43,7 @@ import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -50,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
+import com.revenuecat.placeholder.PlaceholderDefaults
 import hu.bme.ait.sean.ui.theme.Primary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -162,7 +164,13 @@ fun UserCard(
         ) {
             AsyncImage(
                 user.pfpURL,
-                contentDescription = ""
+                contentDescription = "",
+
+                modifier = Modifier.size(100.dp, 100.dp).placeholder(
+                    enabled = user.pfpURL.isEmpty(),
+                    shape = CircleShape,
+                    highlight = PlaceholderDefaults.shimmer
+                )
             )
             Column (
                 horizontalAlignment = Alignment.Start,
@@ -202,7 +210,7 @@ fun UserCard(
                                 ) {
                                     TextButton(
                                         onClick = {
-                                            if (nameText.isNotBlank()) {
+                                            if (nameText.isNotEmpty()) {
                                                 onBioChange(nameText, bioText)
                                                 isEditing = false
                                             }
