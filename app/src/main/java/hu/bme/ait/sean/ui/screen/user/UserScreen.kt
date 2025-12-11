@@ -293,7 +293,7 @@ fun UserReviewCard (
                     .placeholder(
                         enabled = albumData.value == null,
                     )
-                    .size(70.dp, 70.dp)
+                    .size(80.dp, 80.dp)
                     .padding(10.dp)
                     .clickable {
                         toDetailsScreen(
@@ -314,6 +314,7 @@ fun UserReviewCard (
             }
             Spacer(modifier = Modifier.weight(1f))
             IconButton(
+                modifier = Modifier.padding(top = 10.dp),
                 onClick = { onDelete }
             ) {
                 Icon(Icons.Default.Delete, "Delete Review?")
