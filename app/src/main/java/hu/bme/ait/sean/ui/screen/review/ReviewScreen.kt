@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -51,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.revenuecat.placeholder.PlaceholderDefaults
+import com.revenuecat.placeholder.placeholder
 
 @Composable
 fun ReviewScreen(
@@ -75,7 +78,17 @@ fun ReviewScreen(
             Text("Review", fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
             HorizontalDivider(modifier = Modifier.padding(8.dp))
             Row {
-                AsyncImage(img_url, "", modifier = Modifier.padding(end = 10.dp).weight(3f))
+                AsyncImage(
+                    img_url, "",
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .weight(3f)
+                        .placeholder(
+                            enabled = img_url.isEmpty(),
+                            shape = CircleShape,
+                            highlight = PlaceholderDefaults.fade
+                        )
+                )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.weight(7f)
