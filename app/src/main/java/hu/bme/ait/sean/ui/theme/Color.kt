@@ -17,7 +17,7 @@ val Background1 = Color(0xfff6f7eb)
 
 val Background2 = Color(0xffd8c4b3)
 
-val Background3 = Color(0xffdba87f)
+val Background3 = Color(0xffc56d0e)
 
 //val BorderStroke =
 
