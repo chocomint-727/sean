@@ -368,180 +368,201 @@ fun ReviewCard(
 
     val duration = 300
 
-    Card(
-        elevation = CardDefaults.cardElevation(10.dp),
-        modifier = Modifier
-            .padding(10.dp)
-            .clickable(
-                onClick = {
-                    expanded = !expanded
-                }
-            )
-    ) {
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+    when (val postState = postListState.value) {
+        is PostDetailsUIState.Loading -> {
+            CircularProgressIndicator(color = Primary)
+        }
 
-            AnimatedVisibility(
-                visible = !expanded,
-                enter = expandHorizontally (
-                    expandFrom = Alignment.Start,
-                    animationSpec = tween(delayMillis = duration, durationMillis = duration, easing = EaseInOut)
-                ),
-                exit = shrinkHorizontally(
-                    shrinkTowards = Alignment.Start,
-                    animationSpec = tween(durationMillis = duration, easing = EaseInOut)
-                )
-            ) {
-                Column(
+        is PostDetailsUIState.Error -> {
+            Text(postState.msg)
+        }
+
+        is PostDetailsUIState.Success -> {
+            if (postState.posts.isNotEmpty()) {
+                Card(
+                    elevation = CardDefaults.cardElevation(10.dp),
                     modifier = Modifier
                         .padding(10.dp)
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AsyncImage(
-                        userData.value!!.pfpURL,
-                        contentDescription = "Profile",
-                        modifier = Modifier
-                            .size(40.dp, 40.dp)
-                            .clickable(
-                                true,
-                                onClick = {
-                                    goToUserScreen(uid)
-                                    Log.d("REVIEW_CARD", "PFP CLICKED")
-                                }
-                            )
-                    )
-
-                    Text(
-                        userData.value!!.name,
-                        fontSize = 12.sp,
-                        maxLines = if (!expanded) 1 else Int.MAX_VALUE,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .weight(6f)
-            ) {
-
-                AnimatedVisibility(
-                    visible = expanded,
-                    enter = expandVertically (
-                        expandFrom = Alignment.Bottom,
-                        animationSpec = tween(delayMillis = duration, durationMillis = duration, easing = EaseInOut)
-                    ),
-                    exit = shrinkVertically(
-                        shrinkTowards = Alignment.Bottom,
-                        animationSpec = tween(durationMillis = duration, easing = EaseInOut)
-                    )
+                        .clickable(
+                            onClick = {
+                                expanded = !expanded
+                            }
+                        )
                 ) {
                     Row(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .weight(1f),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        AsyncImage(
-                            userData.value!!.pfpURL,
-                            contentDescription = "Profile",
-                            modifier = Modifier
-                                .size(40.dp, 40.dp)
-                                .placeholder(
-                                    enabled = userData.value!!.pfpURL.isEmpty(),
-                                    shape = CircleShape,
-                                    highlight = PlaceholderDefaults.fade
+
+                        AnimatedVisibility(
+                            visible = !expanded,
+                            enter = expandHorizontally(
+                                expandFrom = Alignment.Start,
+                                animationSpec = tween(
+                                    delayMillis = duration,
+                                    durationMillis = duration,
+                                    easing = EaseInOut
                                 )
-                        )// profile pic
-                        Text(
-                            userData.value!!.name,
-                            fontSize = 12.sp,
-                            maxLines = if (!expanded) 1 else Int.MAX_VALUE,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-
-                when (val postState = postListState.value) {
-                    is PostDetailsUIState.Loading -> {
-                        CircularProgressIndicator(color = Primary)
-                    }
-
-                    is PostDetailsUIState.Error -> {
-                        Text(postState.msg)
-                    }
-
-                    is PostDetailsUIState.Success -> {
-                        val post = postState.posts[0].post
-                        Column {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                for (i in 1..5) {
-                                    Icon(
-                                        if (post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
-                                        contentDescription = "star"
-                                    )
-                                }
-                                Spacer(Modifier.weight(1f))
-                                Text(
-                                    "%.1f".format(post.rating) + " / 5",
-                                    fontSize = 14.sp
-                                )
-                            }
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                post.postBody,
-                                fontSize = 16.sp,
-                                maxLines = if(!expanded) 4 else Int.MAX_VALUE,
-                                fontWeight = FontWeight.W300,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-
-                        AnimatedVisibility (
-                            expanded,
-                            enter = expandVertically (
-                                expandFrom = Alignment.Top,
-                                animationSpec = tween(delayMillis = duration, durationMillis = duration, easing = EaseInOut)
                             ),
-                            exit = shrinkVertically(
-                                shrinkTowards = Alignment.Top,
+                            exit = shrinkHorizontally(
+                                shrinkTowards = Alignment.Start,
                                 animationSpec = tween(durationMillis = duration, easing = EaseInOut)
                             )
                         ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AsyncImage(
+                                    userData.value!!.pfpURL,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier
+                                        .size(40.dp, 40.dp)
+                                        .clickable(
+                                            true,
+                                            onClick = {
+                                                goToUserScreen(uid)
+                                                Log.d("REVIEW_CARD", "PFP CLICKED")
+                                            }
+                                        )
+                                )
 
+                                Text(
+                                    userData.value!!.name,
+                                    fontSize = 12.sp,
+                                    maxLines = if (!expanded) 1 else Int.MAX_VALUE,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .weight(6f)
+                        ) {
+
+                            AnimatedVisibility(
+                                visible = expanded,
+                                enter = expandVertically(
+                                    expandFrom = Alignment.Bottom,
+                                    animationSpec = tween(
+                                        delayMillis = duration,
+                                        durationMillis = duration,
+                                        easing = EaseInOut
+                                    )
+                                ),
+                                exit = shrinkVertically(
+                                    shrinkTowards = Alignment.Bottom,
+                                    animationSpec = tween(
+                                        durationMillis = duration,
+                                        easing = EaseInOut
+                                    )
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AsyncImage(
+                                        userData.value!!.pfpURL,
+                                        contentDescription = "Profile",
+                                        modifier = Modifier
+                                            .size(40.dp, 40.dp)
+                                            .placeholder(
+                                                enabled = userData.value!!.pfpURL.isEmpty(),
+                                                shape = CircleShape,
+                                                highlight = PlaceholderDefaults.fade
+                                            )
+                                    )// profile pic
+                                    Text(
+                                        userData.value!!.name,
+                                        fontSize = 12.sp,
+                                        maxLines = if (!expanded) 1 else Int.MAX_VALUE,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+
+
+                            val post = postState.posts[0].post
                             Column {
-                                postState.posts.drop(1).forEach {
-                                    HorizontalDivider(Modifier.padding(12.dp))
-                                    Column {
-                                        Row(
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            for (i in 1..5) {
-                                                Icon(
-                                                    if (it.post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
-                                                    contentDescription = "star"
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    for (i in 1..5) {
+                                        Icon(
+                                            if (post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
+                                            contentDescription = "star"
+                                        )
+                                    }
+                                    Spacer(Modifier.weight(1f))
+                                    Text(
+                                        "%.1f".format(post.rating) + " / 5",
+                                        fontSize = 14.sp
+                                    )
+                                }
+
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    post.postBody,
+                                    fontSize = 16.sp,
+                                    maxLines = if (!expanded) 4 else Int.MAX_VALUE,
+                                    fontWeight = FontWeight.W300,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+
+                            AnimatedVisibility(
+                                expanded,
+                                enter = expandVertically(
+                                    expandFrom = Alignment.Top,
+                                    animationSpec = tween(
+                                        delayMillis = duration,
+                                        durationMillis = duration,
+                                        easing = EaseInOut
+                                    )
+                                ),
+                                exit = shrinkVertically(
+                                    shrinkTowards = Alignment.Top,
+                                    animationSpec = tween(
+                                        durationMillis = duration,
+                                        easing = EaseInOut
+                                    )
+                                )
+                            ) {
+
+                                Column {
+                                    postState.posts.drop(1).forEach {
+                                        HorizontalDivider(Modifier.padding(12.dp))
+                                        Column {
+                                            Row(
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                for (i in 1..5) {
+                                                    Icon(
+                                                        if (it.post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
+                                                        contentDescription = "star"
+                                                    )
+                                                }
+                                                Spacer(Modifier.weight(1f))
+                                                Text(
+                                                    "%.1f".format(it.post.rating) + " / 5",
+                                                    fontSize = 14.sp
                                                 )
                                             }
-                                            Spacer(Modifier.weight(1f))
+
                                             Text(
-                                                "%.1f".format(it.post.rating) + " / 5",
-                                                fontSize = 14.sp
+                                                it.post.postBody,
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.W300
                                             )
                                         }
-
-                                        Text(
-                                            it.post.postBody,
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.W300
-                                        )
                                     }
                                 }
                             }
