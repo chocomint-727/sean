@@ -50,6 +50,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
@@ -184,6 +185,7 @@ fun UserCard(
     var isEditing by remember { mutableStateOf(false) }
     var nameText by rememberSaveable (user.name) { mutableStateOf(user.name) }
     var bioText by rememberSaveable (user.bio) { mutableStateOf(user.bio) }
+    var showFavAlbum by remember { mutableStateOf(false) }
 
     Box (
 
@@ -205,7 +207,42 @@ fun UserCard(
                     )
                     .padding(10.dp)
                     .clip(CircleShape)
+                    .clickable{
+                        showFavAlbum = true
+                    }
             )
+
+            if (showFavAlbum) {
+                Dialog(
+                    {showFavAlbum = false}
+                ) {
+                    Surface (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        shape = RoundedCornerShape(size = 6.dp)
+                    ) {
+                        Column (
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            AsyncImage(
+                                user.pfpURL,
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .placeholder(
+                                        enabled = user.pfpURL.isEmpty(),
+                                        shape = CircleShape,
+                                        highlight = PlaceholderDefaults.fade
+                                    )
+                                    .padding(10.dp)
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
             Column (
                 horizontalAlignment = Alignment.Start,
             ){
@@ -341,7 +378,7 @@ fun UserReviewCard(
                 Row (
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
-                    Text(albumData.value?.name ?: "", fontWeight = FontWeight.W600)
+                    Text(albumData.value?.name ?: "", fontWeight = FontWeight.W600, modifier = Modifier.fillMaxWidth(0.65f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Spacer(Modifier.weight(1f))
                     Text(
                         "%.1f".format(post.rating) + " / 5",

@@ -86,6 +86,7 @@ fun ReviewScreen(
                             shape = CircleShape,
                             highlight = PlaceholderDefaults.fade
                         )
+                        .aspectRatio(1f)
                 )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
