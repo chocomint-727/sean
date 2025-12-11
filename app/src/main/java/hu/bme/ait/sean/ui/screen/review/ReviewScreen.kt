@@ -82,7 +82,7 @@ fun ReviewScreen(
                     img_url, "",
                     modifier = Modifier
                         .padding(end = 10.dp)
-                        .weight(3f)
+                        .weight(4f)
                         .placeholder(
                             enabled = img_url.isEmpty(),
                             shape = CircleShape,
@@ -91,7 +91,7 @@ fun ReviewScreen(
                 )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(7f)
+                    modifier = Modifier.weight(6f)
                 ) {
                     Text(
                         "$album - $artist",
