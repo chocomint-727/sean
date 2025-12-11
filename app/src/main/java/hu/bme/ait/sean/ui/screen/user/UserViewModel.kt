@@ -114,8 +114,13 @@ class UserViewModel : ViewModel() {
         usersCollection.document(uid)
             .update("name", newName)
             .addOnSuccessListener {
-                val updatedUser = currentUserState.user.copy(name = newName)
-                userUIState = UserUIState.Success(updatedUser)
+                Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
+                    .addOnSuccessListener {
+                        userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
+                    }
+                    .addOnFailureListener {
+                        userUIState = UserUIState.Error(msg = it.localizedMessage!!)
+                    }
             }
             .addOnFailureListener { e ->
                 Log.e("USERNAME_CHANGE","Username update failed", e)
@@ -133,8 +138,13 @@ class UserViewModel : ViewModel() {
         usersCollection.document(uid)
             .update("bio", newBio)
             .addOnSuccessListener {
-                val updatedUser = currentUserState.user.copy(bio = newBio)
-                userUIState = UserUIState.Success(updatedUser)
+                Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
+                    .addOnSuccessListener {
+                        userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
+                    }
+                    .addOnFailureListener {
+                        userUIState = UserUIState.Error(msg = it.localizedMessage!!)
+                    }
             }
             .addOnFailureListener { e ->
                 Log.e("BIO_CHANGE","Bio change update failed", e)
