@@ -1,5 +1,6 @@
 package hu.bme.ait.sean.ui.screen.album
 
+import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -174,15 +175,12 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
 
     fun openInMusic(ctx : Context, song : String, album : String, artist : String){
         val query = Uri.encode("$song $album $artist")
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = "content://media/external/audio/media/".toUri() // general media content URI
-            putExtra("query", query)
-            setPackage("com.google.android.music")
-        }
-        if (intent.resolveActivity(ctx.packageManager) != null){
+        val url = "https://www.youtube.com/results?search_query=$query"
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+        try {
             ctx.startActivity(intent)
-        } else {
-            Toast.makeText(ctx, "No music app could be found.", Toast.LENGTH_SHORT).show()
+        } catch (e : Exception) {
+            Toast.makeText(ctx, e.localizedMessage?:"", Toast.LENGTH_SHORT).show()
         }
     }
 
