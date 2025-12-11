@@ -186,14 +186,4 @@ class DetailViewModel @Inject constructor(val api: LastFMAPI) : ViewModel() {
         }
     }
 
-//    fun findUserPost(): Post? {
-//        if (postDetailsUIState is PostDetailsUIState.Success) {
-//            (postDetailsUIState as PostDetailsUIState.Success).posts.forEach { postWithId ->
-//                if (postWithId.post.uid == auth.currentUser?.uid) {
-//                    return postWithId.post
-//                }
-//            }
-//        }
-//        return null
-//    }
 }
