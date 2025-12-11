@@ -384,6 +384,8 @@ fun ReviewCard(
         initial = PostDetailsUIState.Loading
     )
 
+    val duration = 300
+
     Card(
         elevation = CardDefaults.cardElevation(10.dp),
         modifier = Modifier
@@ -403,11 +405,11 @@ fun ReviewCard(
                 visible = !expanded,
                 enter = expandHorizontally (
                     expandFrom = Alignment.Start,
-                    animationSpec = tween(delayMillis = 300, durationMillis = 300, easing = EaseInOut)
+                    animationSpec = tween(delayMillis = duration, durationMillis = duration, easing = EaseInOut)
                 ),
                 exit = shrinkHorizontally(
                     shrinkTowards = Alignment.Start,
-                    animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                    animationSpec = tween(durationMillis = duration, easing = EaseInOut)
                 )
             ) {
                 Column(
@@ -441,11 +443,11 @@ fun ReviewCard(
                     visible = expanded,
                     enter = expandVertically (
                         expandFrom = Alignment.Bottom,
-                        animationSpec = tween(delayMillis = 300, durationMillis = 300, easing = EaseInOut)
+                        animationSpec = tween(delayMillis = duration, durationMillis = duration, easing = EaseInOut)
                     ),
                     exit = shrinkVertically(
                         shrinkTowards = Alignment.Bottom,
-                        animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                        animationSpec = tween(durationMillis = duration, easing = EaseInOut)
                     )
                 ) {
                     Row(
@@ -502,22 +504,21 @@ fun ReviewCard(
                             Text(
                                 post.postBody,
                                 fontSize = 16.sp,
+                                maxLines = if(!expanded) 4 else Int.MAX_VALUE,
                                 fontWeight = FontWeight.W300,
-                                maxLines = if (expanded) Int.MAX_VALUE else 4,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
-
                         }
 
                         AnimatedVisibility (
                             expanded,
                             enter = expandVertically (
                                 expandFrom = Alignment.Top,
-                                animationSpec = tween(delayMillis = 300, durationMillis = 300, easing = EaseInOut)
+                                animationSpec = tween(delayMillis = duration, durationMillis = duration, easing = EaseInOut)
                             ),
                             exit = shrinkVertically(
                                 shrinkTowards = Alignment.Top,
-                                animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+                                animationSpec = tween(durationMillis = duration, easing = EaseInOut)
                             )
                         ) {
 

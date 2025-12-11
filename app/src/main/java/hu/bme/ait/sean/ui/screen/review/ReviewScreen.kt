@@ -51,7 +51,8 @@ fun ReviewScreen(
         modifier = Modifier.padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text("Review for $album - $artist", fontSize = 32.sp, modifier = Modifier.align(Alignment.Start))
+        Text("Review for", fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
+        Text("$album - $artist", fontSize = 32.sp, modifier = Modifier.align(Alignment.Start))
         Row (
             horizontalArrangement = Arrangement.SpaceBetween
         ){
@@ -64,7 +65,8 @@ fun ReviewScreen(
         Slider(
             value = stars,
             onValueChange = {stars = it},
-            valueRange = 1f..5f
+            valueRange = 1f..5f,
+            steps = 9
         )
         OutlinedTextField(
             value = if (!aiUsed) review else textResult?:"",
