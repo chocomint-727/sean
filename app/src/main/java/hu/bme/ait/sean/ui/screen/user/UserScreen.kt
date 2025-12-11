@@ -276,10 +276,7 @@ fun UserReviewCard(
     onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Background3
-        )
+        modifier = Modifier.fillMaxWidth()
     ) {
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()

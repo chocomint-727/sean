@@ -20,11 +20,8 @@ import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.ViewInAr
-import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +51,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.revenuecat.placeholder.PlaceholderDefaults
 import com.revenuecat.placeholder.placeholder
+import hu.bme.ait.sean.ui.theme.Primary
 
 @Composable
 fun ReviewScreen(
@@ -193,7 +191,8 @@ fun DragRow(
                     Icons.Outlined.StarRate,
                     contentDescription = "star",
                     modifier = Modifier
-                        .fillMaxWidth().weight(1f).aspectRatio(1f)
+                        .fillMaxWidth().weight(1f).aspectRatio(1f),
+                    tint = Primary
                 )
             }
         }
@@ -239,7 +238,8 @@ fun DragRow(
                     Icons.Filled.StarRate,
                     contentDescription = "star",
                     modifier = Modifier
-                        .fillMaxWidth().weight(1f).aspectRatio(1f)
+                        .fillMaxWidth().weight(1f).aspectRatio(1f),
+                    tint = Primary
                 )
             }
         }

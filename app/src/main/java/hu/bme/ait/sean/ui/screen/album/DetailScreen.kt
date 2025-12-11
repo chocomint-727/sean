@@ -34,9 +34,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.BorderColor
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.Start
-import androidx.compose.material.icons.sharp.Clear
+import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -497,8 +497,9 @@ fun ReviewCard(
                                 ) {
                                     for (i in 1..5) {
                                         Icon(
-                                            if (post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
-                                            contentDescription = "star"
+                                            if (post.rating >= i.toFloat()) Icons.Filled.StarRate else Icons.Outlined.StarRate,
+                                            contentDescription = "star",
+                                            tint = Primary
                                         )
                                     }
                                     Spacer(Modifier.weight(1f))
@@ -547,8 +548,9 @@ fun ReviewCard(
                                             ) {
                                                 for (i in 1..5) {
                                                     Icon(
-                                                        if (it.post.rating >= i.toFloat()) Icons.Filled.Star else Icons.Sharp.Clear,
-                                                        contentDescription = "star"
+                                                        if (it.post.rating >= i.toFloat()) Icons.Filled.StarRate else Icons.Outlined.StarRate,
+                                                        contentDescription = "star",
+                                                        tint = Primary
                                                     )
                                                 }
                                                 Spacer(Modifier.weight(1f))
