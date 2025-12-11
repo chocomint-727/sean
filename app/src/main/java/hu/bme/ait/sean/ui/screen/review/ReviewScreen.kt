@@ -75,14 +75,14 @@ fun ReviewScreen(
             Text("Review", fontSize = 16.sp, modifier = Modifier.align(Alignment.Start))
             HorizontalDivider(modifier = Modifier.padding(8.dp))
             Row {
-                AsyncImage(img_url, "", modifier = Modifier.padding(end = 10.dp).weight(3f))
+                AsyncImage(img_url, "", modifier = Modifier.padding(end = 10.dp).weight(4f))
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(7f)
+                    modifier = Modifier.weight(6f)
                 ) {
                     Text(
                         "$album - $artist",
-                        fontSize = 32.sp,
+                        fontSize = 24.sp,
                         modifier = Modifier.padding(vertical = 8.dp),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis

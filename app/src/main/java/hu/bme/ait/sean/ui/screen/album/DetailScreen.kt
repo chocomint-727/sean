@@ -197,7 +197,8 @@ fun DetailScreen(
                         ) {
                             Text(
                                 details.name ?: "SLITHERMAN VS NEPHEW",
-                                fontSize = 32.sp,
+                                fontSize = 24.sp,
+                                maxLines = 1,
                                 fontWeight = FontWeight.W400
                             )
                             Row {

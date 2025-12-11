@@ -106,6 +106,16 @@ class UserViewModel : ViewModel() {
         }
     }
 
+    fun updateUserState() = {
+        Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
+            .addOnSuccessListener {
+                userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
+            }
+            .addOnFailureListener {
+                userUIState = UserUIState.Error(msg = it.localizedMessage!!)
+            }
+    }
+
     fun updateUsername(newName: String){
         val currentUserState = userUIState as? UserUIState.Success ?: return
         val firebaseUser = auth.currentUser ?: return
@@ -114,13 +124,7 @@ class UserViewModel : ViewModel() {
         usersCollection.document(uid)
             .update("name", newName)
             .addOnSuccessListener {
-                Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
-                    .addOnSuccessListener {
-                        userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
-                    }
-                    .addOnFailureListener {
-                        userUIState = UserUIState.Error(msg = it.localizedMessage!!)
-                    }
+                updateUserState()
             }
             .addOnFailureListener { e ->
                 Log.e("USERNAME_CHANGE","Username update failed", e)
@@ -138,13 +142,7 @@ class UserViewModel : ViewModel() {
         usersCollection.document(uid)
             .update("bio", newBio)
             .addOnSuccessListener {
-                Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
-                    .addOnSuccessListener {
-                        userUIState = UserUIState.Success(user = it.toObject(User::class.java)!!)
-                    }
-                    .addOnFailureListener {
-                        userUIState = UserUIState.Error(msg = it.localizedMessage!!)
-                    }
+                updateUserState()
             }
             .addOnFailureListener { e ->
                 Log.e("BIO_CHANGE","Bio change update failed", e)

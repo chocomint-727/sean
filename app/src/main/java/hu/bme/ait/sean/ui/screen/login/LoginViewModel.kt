@@ -45,7 +45,7 @@ class LoginViewModel : ViewModel() {
                                 bio = "I am Sean from Gimble",
                                 email = email,
                                 name = "Sean",
-                                pfpURL = ""
+                                pfpURL = "https://lastfm.freetls.fastly.net/i/u/300x300/50d78c1ea3228a1e0b5914eb94120fae.jpg"
                             )
                         )
                         .addOnSuccessListener {

@@ -113,9 +113,9 @@ fun UserScreen(
                             viewModel.updateBio(newBio)
                         }
                     )
-                    Spacer(modifier = Modifier.padding(2.dp))
-                    HorizontalDivider()
-                    Spacer(modifier = Modifier.padding(2.dp))
+
+                    HorizontalDivider(Modifier.padding(3.dp))
+
 
                     when (val state = userPosts.value) {
                         is PostDetailsUIState.Loading -> {
@@ -173,7 +173,7 @@ fun UserCard(
     
     Card (
         elevation = CardDefaults.elevatedCardElevation(10.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically
