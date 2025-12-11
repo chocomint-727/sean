@@ -12,11 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
-import hu.bme.ait.sean.nav.DetailScreenRoute
 import hu.bme.ait.sean.nav.SearchScreenRoute
 import hu.bme.ait.sean.nav.UserScreenRoute
-import hu.bme.ait.sean.ui.theme.Background1
-import hu.bme.ait.sean.ui.theme.Background2
 import hu.bme.ait.sean.ui.theme.BottomPillIndicatorColor
 import hu.bme.ait.sean.ui.theme.Primary
 
@@ -44,9 +41,7 @@ fun AppBottomBar(
     currentRoute: NavKey?,
     onNavigate: (NavKey) -> Unit
 ) {
-    NavigationBar(
-        containerColor = Background1
-    ) {
+    NavigationBar {
         bottomDestinations.forEach { dest ->
             NavigationBarItem(
                 selected = currentRoute == dest.route,
