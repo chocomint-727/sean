@@ -104,8 +104,8 @@ fun NavGraph(
                     backStack.add(DetailScreenRoute(album, artist))
                 }
             }
-            entry<OtherUserScreenRoute> {
-                OtherUserScreen { album, artist ->
+            entry<OtherUserScreenRoute> { uid ->
+                OtherUserScreen(uid = uid.uid) { album, artist ->
                     backStack.add(DetailScreenRoute(album, artist))
                 }
             }
@@ -115,8 +115,22 @@ fun NavGraph(
                 }
             }
             entry<DetailScreenRoute> { (albumName, artistName) ->
-                DetailScreen(albumName, artistName, modifier = modifier) { albumID, album, artist, img_url ->
-                    backStack.add(ReviewScreenRoute(albumID, album, artist, img_url))
+                DetailScreen(
+                    albumName,
+                    artistName,
+                    modifier = modifier,
+                    goToReviewScreen = { albumID, album, artist, img_url ->
+                        backStack.add(
+                            ReviewScreenRoute(
+                                albumID,
+                                album,
+                                artist,
+                                img_url
+                            )
+                        )
+                    }
+                ) { uid ->
+                    backStack.add(OtherUserScreenRoute(uid))
                 }
             }
             entry<ReviewScreenRoute> { (albumID, album, artist, img_url) ->
