@@ -1,5 +1,6 @@
 package hu.bme.ait.sean.ui.screen.search
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,11 +40,19 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.firestore
+import hu.bme.ait.sean.data.Post
 import hu.bme.ait.sean.data.SearchResponse.SearchAlbum
+import hu.bme.ait.sean.data.StoredAlbumData
+import hu.bme.ait.sean.ui.screen.review.WriteReviewUIState
 import hu.bme.ait.sean.ui.theme.Primary
+import kotlin.text.ifEmpty
 
 @Composable
 fun SearchScreen(
@@ -63,7 +72,13 @@ fun SearchScreen(
     ) {
         OutlinedTextField(
             value = searchText,
-            onValueChange = {searchText = it},
+            onValueChange = {
+                searchText = it
+                if (searchText.isEmpty()){
+                    viewModel.getRandomAlbum()
+                    viewModel.searchUIState = SearchUIState.Init
+                }
+                            },
             label = {Text("Search...")},
             trailingIcon = {
                 IconButton(
@@ -87,9 +102,13 @@ fun SearchScreen(
             ),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    viewModel.search(searchText)
-                    defaultKeyboardAction(ImeAction.Search)
-                    keyboardController?.hide()
+                    if (searchText.isNotEmpty()) {
+                        viewModel.search(searchText)
+                        defaultKeyboardAction(ImeAction.Search)
+                        keyboardController?.hide()
+                    } else {
+                        viewModel.searchUIState = SearchUIState.Init
+                    }
                 }
             )
         )
@@ -114,7 +133,7 @@ fun SearchScreen(
                             }
                     )
                     Text("Sean Recommends:")
-                    Text("${viewModel.randomAlbum.artist.ifEmpty { "Boolymon" }} - ${viewModel.randomAlbum.name.ifEmpty{"outstanding"}}")
+                    Text("${viewModel.randomAlbum.artist.ifEmpty { "Boolymon" }} - ${viewModel.randomAlbum.name.ifEmpty{"outstanding"}}", textAlign = TextAlign.Center)
                 }
             }
             is SearchUIState.Loading -> {
@@ -136,7 +155,7 @@ fun SearchScreen(
                         items(items = albums) {
                             Column{
                                 Spacer(Modifier.height(3.dp))
-                                AlbumSummaryCard(it!!, navigateToDetailScreen = navigateToDetailScreen)
+                                AlbumSummaryCard(it!!, uploadCB = {data, cb -> viewModel.uploadToDB(data, cb)}, navigateToDetailScreen = navigateToDetailScreen)
                             }
                         }
                     }
@@ -169,8 +188,19 @@ fun SearchScreen(
 fun AlbumSummaryCard (
     album : SearchAlbum,
     modifier : Modifier = Modifier,
+    uploadCB : (SearchAlbum, () -> Unit) -> Unit,
     navigateToDetailScreen: (String, String) -> Unit
 ) {
+    var queried by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (!queried) {
+            uploadCB(album) {
+                queried = true
+            } // This is for building our db faster
+        }
+    }
+
     Card (
         modifier = modifier
             .fillMaxWidth()

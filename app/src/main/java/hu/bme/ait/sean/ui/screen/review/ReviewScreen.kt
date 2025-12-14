@@ -68,7 +68,9 @@ fun ReviewScreen(
     val textResult = viewModel.textGenerationResult.collectAsState().value
 
     Box (
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ){
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
@@ -155,7 +157,9 @@ fun ReviewScreen(
             }
         }
         Button(
-            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
             onClick = {
                 val p = if (!aiUsed) review else textResult ?: ""
                 if (p != "") {
@@ -192,7 +196,9 @@ fun DragRow(
                     Icons.Outlined.StarRate,
                     contentDescription = "star",
                     modifier = Modifier
-                        .fillMaxWidth().weight(1f).aspectRatio(1f),
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .aspectRatio(1f),
                     tint = Primary
                 )
             }
@@ -239,7 +245,9 @@ fun DragRow(
                     Icons.Filled.StarRate,
                     contentDescription = "star",
                     modifier = Modifier
-                        .fillMaxWidth().weight(1f).aspectRatio(1f),
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .aspectRatio(1f),
                     tint = Primary
                 )
             }

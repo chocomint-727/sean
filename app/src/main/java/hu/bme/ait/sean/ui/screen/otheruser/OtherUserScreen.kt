@@ -1,16 +1,26 @@
 package hu.bme.ait.sean.ui.screen.otheruser
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,8 +41,17 @@ import hu.bme.ait.sean.data.User
 import hu.bme.ait.sean.ui.screen.album.PostDetailsUIState
 import kotlinx.coroutines.flow.Flow
 import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.window.Dialog
+import com.revenuecat.placeholder.PlaceholderDefaults
 import hu.bme.ait.sean.ui.theme.Primary
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +70,8 @@ fun OtherUserScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (user == null) {
@@ -65,9 +85,7 @@ fun OtherUserScreen(
                 OtherUserCard(
                     user = user
                 )
-                Spacer(modifier = Modifier.padding(2.dp))
-                HorizontalDivider()
-                Spacer(modifier = Modifier.padding(2.dp))
+                HorizontalDivider(Modifier.padding(10.dp))
 
                 when (val state = userPosts.value) {
                     is PostDetailsUIState.Loading -> {
@@ -105,22 +123,66 @@ fun OtherUserScreen(
 fun OtherUserCard(
     user: User?
 ) {
-    Card (
-        elevation = CardDefaults.elevatedCardElevation(10.dp),
+    var showFavAlbum by remember { mutableStateOf(false) }
+
+    Box (
         modifier = Modifier.fillMaxWidth(),
-        shape = RectangleShape
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 user?.pfpURL,
-                contentDescription = ""
+                contentDescription = "",
+                modifier = Modifier
+                    .size(100.dp, 100.dp)
+                    .placeholder(
+                        enabled = (user?.pfpURL ?: "").isEmpty(),
+                        shape = CircleShape,
+                        highlight = PlaceholderDefaults.fade
+                    )
+                    .padding(10.dp)
+                    .clip(CircleShape)
+                    .clickable{
+                        showFavAlbum = true
+                    }
             )
+
+            if (showFavAlbum) {
+                Dialog(
+                    {showFavAlbum = false}
+                ) {
+                    Surface (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        shape = RoundedCornerShape(size = 6.dp)
+                    ) {
+                        Column (
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            AsyncImage(
+                                user?.pfpURL,
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .placeholder(
+                                        enabled = (user?.pfpURL ?: "").isEmpty(),
+                                        shape = CircleShape,
+                                        highlight = PlaceholderDefaults.fade
+                                    )
+                                    .padding(10.dp)
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
             Column (
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(user?.name ?: "User could not be loaded", fontSize = 24.sp, modifier = Modifier.padding(10.dp))
+                Text(user?.name ?: "User could not be loaded", fontSize = 24.sp, fontWeight = FontWeight.W600, modifier = Modifier.padding(10.dp))
                 Text(user?.bio ?: "Bio could not be loaded", fontSize = 16.sp, modifier = Modifier.padding(10.dp))
             }
         }
@@ -133,13 +195,26 @@ fun UserReviewCard (
     getAlbumData : (String) -> Flow<StoredAlbumData?>,
     toDetailsScreen: (String, String) -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                expanded = !expanded
+            }
+            .animateContentSize(
+                animationSpec = tween(durationMillis = 300, easing = EaseInOut)
+            )
     ) {
         val albumData = getAlbumData(post.albumID).collectAsState(
             StoredAlbumData()
         )
-        Row {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 4.dp), // small right padding so icon isn't glued to edge
+            verticalAlignment = Alignment.Top
+        ) {
             AsyncImage(
                 albumData.value?.img_url,
                 "Album Cover",
@@ -147,7 +222,7 @@ fun UserReviewCard (
                     .placeholder(
                         enabled = albumData.value == null,
                     )
-                    .size(70.dp, 70.dp)
+                    .size(80.dp, 80.dp)
                     .padding(10.dp)
                     .clickable {
                         toDetailsScreen(
@@ -159,16 +234,29 @@ fun UserReviewCard (
             )
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier
+                    .weight(1f)          // 🔑 constrain width so text wraps
+                    .padding(10.dp)
             ) {
-                Row {
-                    Text(albumData.value?.name ?: "")
+
+                Row (
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Text(albumData.value?.name ?: "", fontWeight = FontWeight.W600, modifier = Modifier.fillMaxWidth(0.65f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "%.1f".format(post.rating) + " / 5",
+                        fontSize = 14.sp
+                    )
                 }
-                Text(post.postBody)
+                Spacer(Modifier.padding(8.dp))
+                Text(
+                    text = post.postBody,
+                    // optional: limit lines so the card doesn’t get huge
+                    maxLines = if (!expanded) 5 else Int.MAX_VALUE,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
-
         }
-
-
     }
 }

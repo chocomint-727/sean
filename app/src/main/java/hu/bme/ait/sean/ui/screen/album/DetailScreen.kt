@@ -489,7 +489,7 @@ fun ReviewCard(
                                     Text(
                                         userData.value!!.name,
                                         fontSize = 12.sp,
-                                        maxLines = if (!expanded) 1 else Int.MAX_VALUE,
+                                        maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
