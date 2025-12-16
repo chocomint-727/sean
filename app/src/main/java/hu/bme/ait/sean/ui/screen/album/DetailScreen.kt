@@ -88,9 +88,14 @@ fun String?.indexesOf(pat: String, ignoreCase: Boolean = true): List<Int> =
         .map { it.range.first }
         .toList()
 
-fun Modifier.realOffset(y: Dp) = layout { measurable, constraints ->
+fun Modifier.realOffset(x : Dp, y: Dp) = layout { measurable, constraints ->
     val yPx = y.roundToPx()
+    val xPx = x.roundToPx()
+    Log.d("CONSTRAINT BOUND MAX", (constraints.maxWidth - xPx).toString())
+    Log.d("CONSTRAINT BOUND MIN", (constraints.minWidth - xPx).toString())
     val newConst = constraints.copy(
+        maxWidth = constraints.maxWidth - xPx,
+        minWidth = 0,
         maxHeight = constraints.maxHeight - yPx,
         minHeight = constraints.minHeight - yPx
     )
@@ -98,7 +103,7 @@ fun Modifier.realOffset(y: Dp) = layout { measurable, constraints ->
 
     // expand layout to allow upward movement
     layout(placeable.width, placeable.height) {
-        placeable.place(0, yPx / 2)
+        placeable.place(xPx / 2, yPx / 2)
     }
 }
 
@@ -136,7 +141,7 @@ fun DetailScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .realOffset(albumCoverSize.dp)
+            .realOffset(0.dp, albumCoverSize.dp)
     ) {
         Column(
             modifier = Modifier

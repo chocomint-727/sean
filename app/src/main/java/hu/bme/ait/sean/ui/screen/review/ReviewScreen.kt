@@ -1,6 +1,8 @@
 package hu.bme.ait.sean.ui.screen.review
 
 import android.graphics.RectF
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -31,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -51,7 +55,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.revenuecat.placeholder.PlaceholderDefaults
 import com.revenuecat.placeholder.placeholder
+import hu.bme.ait.sean.ui.screen.album.realOffset
 import hu.bme.ait.sean.ui.theme.Primary
+import kotlinx.coroutines.delay
 
 @Composable
 fun ReviewScreen(
@@ -67,11 +73,11 @@ fun ReviewScreen(
     var aiUsed by remember { mutableStateOf(false) }
     val textResult = viewModel.textGenerationResult.collectAsState().value
 
-    Box (
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-    ){
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -91,18 +97,21 @@ fun ReviewScreen(
                         .aspectRatio(1f)
                 )
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.weight(6f)
                 ) {
-                    Text(
-                        "$album - $artist",
-                        fontSize = 32.sp,
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    DragRow {
-                        stars = 5f * it
+                    Column {
+                        Text(artist, fontSize = 20.sp, maxLines = 1)
+                        Text(album, fontSize = 32.sp, maxLines = 1)
+                    }
+                    Box (
+
+                    ){
+                        DragRow(
+                        ) {
+                            stars = 5f * it
+                        }
                     }
                 }
             }
@@ -180,13 +189,73 @@ fun ReviewScreen(
 }
 
 @Composable
+fun ScrollText(
+    text: String,
+) {
+    var w by remember { mutableIntStateOf(1) }
+    var curXOff by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+
+        while (true) {
+            delay(1000)
+            animate(
+                initialValue = 0f,
+                targetValue = -1f,
+                animationSpec = tween(durationMillis = 10000)
+            ) { v, _ ->
+                curXOff = v
+            }
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .graphicsLayer {
+                clip = true
+                shape = GenericShape { size, _ ->
+                    addRect(
+                        Rect(
+                            0f, 0f,
+                            size.width, size.height
+                        )
+                    )
+                }
+            }
+            .realOffset((w * curXOff).dp, 0.dp)
+    ) {
+        Text(
+            "$text ",
+            fontSize = 32.sp,
+            modifier = Modifier
+                .onGloballyPositioned {
+                    w = it.size.width
+                },
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            "$text ",
+            fontSize = 32.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+    }
+}
+
+@Composable
 fun DragRow(
-    onChange : (Float) -> Unit
+    modifier: Modifier = Modifier,
+    onChange: (Float) -> Unit
 ) {
     var w by remember { mutableIntStateOf(1) }
     var pos by remember { mutableFloatStateOf(0f) }
 
-    Box {
+    Box(
+        modifier = modifier
+    ) {
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -211,6 +280,12 @@ fun DragRow(
                     w = it.size.width
                 }
                 .pointerInput(Unit) {
+//                    detectTapGestures(
+//                        onTap = { offset ->
+//                            pos = (offset.x / w).coerceIn(0f, 1f)
+//                            onChange(pos)
+//                        }
+//                    )
                     detectDragGestures(
                         onDragStart = { offset ->
                             pos = (offset.x / w).coerceIn(0f, 1f)
@@ -218,12 +293,6 @@ fun DragRow(
                         },
                         onDrag = { inputChange, offset ->
                             pos = (inputChange.position.x / w).coerceIn(0f, 1f)
-                            onChange(pos)
-                        }
-                    )
-                    detectTapGestures(
-                        onTap = { offset ->
-                            pos = (offset.x / w).coerceIn(0f, 1f)
                             onChange(pos)
                         }
                     )
